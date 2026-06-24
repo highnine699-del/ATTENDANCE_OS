@@ -1,0 +1,92 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-sans);
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+h1, h2, h3, h4 {
+    margin-bottom: var(--space-md);
+    font-weight: 600;
+}
+
+h1 {
+    font-size: var(--fs-xl);
+}
+
+h2 {
+    font-size: var(--fs-lg);
+}
+
+h3 {
+    font-size: var(--fs-md);
+}
+
+p {
+    margin-bottom: var(--space-sm);
+}
+
+a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--primary-light);
+}
+
+input, select, textarea {
+    background: var(--bg-darker);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius);
+    font-family: var(--font-sans);
+    font-size: 16px; /* Prevent iOS zoom on focus */
+    width: 100%;
+    min-height: 44px; /* Android touch target minimum */
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+/* Android-specific: prevent text selection on UI elements */
+button, .nav-item {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+/* Icon classes */
+.icon-chart, .icon-moon, .icon-sun, .icon-book, .icon-clipboard,
+.icon-edit, .icon-camera, .icon-crystal, .icon-calendar, .icon-trend-up,
+.icon-trend-down, .icon-arrow-right, .icon-clock, .icon-trash, .icon-party,
+.icon-check, .icon-x, .icon-progress {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+}
+
+.icon-chart svg, .icon-moon svg, .icon-sun svg, .icon-book svg, .icon-clipboard svg,
+.icon-edit svg, .icon-camera svg, .icon-crystal svg, .icon-calendar svg, .icon-trend-up svg,
+.icon-trend-down svg, .icon-arrow-right svg, .icon-clock svg, .icon-trash svg, .icon-party svg,
+.icon-check svg, .icon-x svg, .icon-progress svg {
+    width: 1em;
+    height: 1em;
+}
+
+label {
+    display: block;
+    margin-bottom: var(--space-xs);
+    font-size: var(--fs-sm);
+    color: var(--text-secondary);
+}

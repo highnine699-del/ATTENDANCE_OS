@@ -1,0 +1,152 @@
+#app {
+    display: flex;
+    height: 100vh;
+    background: var(--bg-dark);
+    color: var(--text-primary);
+}
+
+#sidebar {
+    width: 280px;
+    background: var(--bg-darker);
+    border-right: 1px solid var(--border);
+    padding: var(--space-lg);
+    overflow-y: auto;
+}
+
+#sidebar header {
+    margin-bottom: var(--space-lg);
+}
+
+#content {
+    flex: 1;
+    padding: var(--space-xl);
+    overflow-y: auto;
+}
+
+#nav-menu {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin: var(--space-lg) 0;
+}
+
+.nav-item {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: var(--space-md);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: left;
+    font-size: var(--fs-md);
+}
+
+.nav-item:hover, .nav-item.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-lg);
+    margin-top: var(--space-lg);
+}
+
+@media (max-width: 480px) {
+    .courses-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-md);
+    }
+}
+
+.dashboard {
+    max-width: 1200px;
+}
+
+.sync-module {
+    max-width: 800px;
+}
+
+@media (max-width: 768px) {
+    #app {
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+    }
+    #sidebar {
+        width: 100%;
+        max-height: auto;
+        padding: var(--space-md);
+        flex-shrink: 0;
+    }
+    #sidebar header {
+        margin-bottom: var(--space-sm);
+    }
+    #sidebar header h1 {
+        font-size: var(--fs-lg);
+    }
+    #nav-menu {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: var(--space-xs);
+        margin: var(--space-sm) 0;
+    }
+    .nav-item {
+        flex: 1;
+        min-width: 100px;
+        padding: var(--space-sm);
+        font-size: var(--fs-sm);
+        text-align: center;
+    }
+    #content {
+        padding: var(--space-md);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .sidebar-footer {
+        margin-top: var(--space-sm);
+        padding: var(--space-sm);
+    }
+    .sync-status {
+        margin-top: var(--space-sm);
+    }
+    .sync-status button {
+        width: 100%;
+    }
+}
+
+/* Android-specific optimizations */
+@media (max-width: 480px) {
+    #sidebar header h1 {
+        font-size: var(--fs-md);
+    }
+    .subtitle {
+        font-size: var(--fs-sm);
+    }
+    .nav-item {
+        min-width: 80px;
+        font-size: var(--fs-xs);
+        padding: var(--space-xs);
+    }
+    #content {
+        padding: var(--space-sm);
+    }
+}
+
+.sidebar-footer {
+    margin-top: var(--space-lg);
+    padding: var(--space-md);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: center;
+}
+
+.user-display {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: var(--space-sm);
+    font-weight: 500;
+}

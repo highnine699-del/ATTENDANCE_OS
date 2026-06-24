@@ -1,0 +1,36 @@
+:root {
+    /* Colors: Emerald theme */
+    --primary: #10b981;
+    --primary-dark: #059669;
+    --primary-light: #6ee7b7;
+    --bg-dark: #0f172a;
+    --bg-darker: #050c1a;
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --border: #1e293b;
+    
+    /* Alert colors */
+    --alert-danger: #ef4444;
+    --alert-warning: #f59e0b;
+    --alert-success: #10b981;
+    --alert-info: #3b82f6;
+    
+    /* Spacing */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    
+    /* Typography */
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'Courier New', monospace;
+    --fs-sm: 0.875rem;
+    --fs-md: 1rem;
+    --fs-lg: 1.125rem;
+    --fs-xl: 1.5rem;
+    
+    /* Borders & shadows */
+    --radius: 0.5rem;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}

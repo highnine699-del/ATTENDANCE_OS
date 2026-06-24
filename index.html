@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Attendance OS — LMU</title>
+    <link rel="stylesheet" href="css/tokens.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#10b981">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+    <div id="loading-screen" style="position: fixed; inset: 0; background: var(--bg-dark); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+        <div style="text-align: center;">
+            <div class="spinner" style="width: 40px; height: 40px; border-width: 4px;"></div>
+            <p style="margin-top: 1rem; color: var(--text-secondary);">Loading Attendance OS...</p>
+        </div>
+    </div>
+    <div id="app" style="display: none;">
+        <aside id="sidebar">
+            <header>
+                <h1><span class="icon-chart"></span> Attendance OS</h1>
+                <p class="subtitle">LMU Landmark University</p>
+                <p class="user-display" id="user-display"></p>
+            </header>
+            <nav id="nav-menu">
+                <button class="nav-item active" data-module="dashboard">Dashboard</button>
+                <button class="nav-item" data-module="courses">My Courses</button>
+                <button class="nav-item" data-module="calculator">Calculator</button>
+                <button class="nav-item" data-module="sync">Sync Data</button>
+                <button class="nav-item" data-module="settings">Settings</button>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="theme-toggle" class="theme-toggle" title="Toggle theme">
+                    <span class="icon-moon"></span>
+                </button>
+            </div>
+            <div id="sync-status" class="sync-status">
+                <p id="last-sync">Last sync: never</p>
+                <button id="quick-sync" class="btn-secondary">Quick Sync</button>
+            </div>
+        </aside>
+        <main id="content">
+            <!-- Modules render here -->
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

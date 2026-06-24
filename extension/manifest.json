@@ -1,0 +1,38 @@
+{
+    "manifest_version": 3,
+    "name": "Attendance OS",
+    "version": "1.0.0",
+    "description": "Auto-sync your LMU attendance from the portal",
+    "permissions": [
+        "storage",
+        "tabs"
+    ],
+    "host_permissions": [
+        "https://att2.lmu.edu.ng/*"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "action": {
+        "default_popup": "popup.html",
+        "default_title": "Attendance OS"
+    },
+    "content_scripts": [
+        {
+            "matches": ["https://att2.lmu.edu.ng/*"],
+            "js": ["content-scraper.js"],
+            "run_at": "document_idle"
+        },
+        {
+            "matches": ["http://localhost:*/*", "http://127.0.0.1:*/*", "https://highnine699-del.github.io/ATTENDANCE_TRACKER/*"],
+            "js": ["webapp-bridge.js"],
+            "run_at": "document_idle"
+        }
+    ],
+    "externally_connectable": {
+        "matches": [
+            "http://localhost:*/*",
+            "https://highnine699-del.github.io/"
+        ]
+    }
+}

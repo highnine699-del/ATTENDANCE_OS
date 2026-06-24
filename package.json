@@ -1,0 +1,28 @@
+{
+  "name": "attendance-os",
+  "version": "1.0.0",
+  "description": "Attendance tracking system for LMU students with Chrome extension sync",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve -p 3000",
+    "dev": "npx serve -p 3000",
+    "build": "echo 'No build step required for vanilla JS'",
+    "test": "echo 'Tests not implemented yet'"
+  },
+  "keywords": [
+    "attendance",
+    "lmu",
+    "landmark-university",
+    "chrome-extension",
+    "education"
+  ],
+  "author": "Josiah",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/highnine699/attendance-os.git"
+  },
+  "homepage": "https://highnine699.github.io/attendance-os/",
+  "devDependencies": {},
+  "dependencies": {}
+}
