@@ -1,64 +1,54 @@
 import { validateCourse, validateAttendance } from '../validator.js';
-import { calculatePercentage } from '../engine.js';
+import { calculatePercentage, calcCourseStats, getStatusMeta, getStatus } from '../engine.js';
+import { formatDate } from '../utils.js';
 import { icons } from '../icons.js';
+import { showSuccess, showError } from '../toast.js';
 
 export function renderCourses(state, container) {
-    const courses = state.getCourses();
+    const courses  = state.getCourses();
     const settings = state.getSettings();
+    const threshold = settings.passThresholdPercent || 75;
 
-    // Empty state when no courses
     if (courses.length === 0) {
         container.innerHTML = `
             <div class="courses-module">
                 <h2>My Courses</h2>
-                
                 <div class="course-actions">
-                    <button id="add-course-btn" class="btn-primary">Add Course</button>
+                    <button id="add-course-btn" class="btn-primary">+ Add Course</button>
                 </div>
-
                 <div class="empty-state">
                     <div class="empty-icon">${icons.book}</div>
                     <h3>No Courses Yet</h3>
-                    <p>Add your courses manually or sync from the LMU portal to get started.</p>
+                    <p>Add your courses manually or sync from the LMU portal.</p>
                 </div>
-            </div>
-        `;
-        // Still need to attach event listener for add button
-        document.getElementById('add-course-btn')?.addEventListener('click', () => {
-            showAddCourseModal(state);
-        });
+            </div>`;
+        document.getElementById('add-course-btn')?.addEventListener('click', () => showAddCourseModal(state, container));
         return;
     }
 
     const html = `
         <div class="courses-module">
             <h2>My Courses</h2>
-            
             <div class="course-actions">
-                <button id="add-course-btn" class="btn-primary">Add Course</button>
+                <button id="add-course-btn" class="btn-primary">+ Add Course</button>
             </div>
-
             <div class="filter-controls">
-                <label>
-                    Sort by:
+                <label>Sort:
                     <select id="sort-select">
+                        <option value="risk">Risk (worst first)</option>
                         <option value="code">Course Code</option>
                         <option value="percentage">Attendance %</option>
                         <option value="units">Units</option>
-                        <option value="title">Course Title</option>
                     </select>
                 </label>
-                <label>
-                    Filter by Status:
+                <label>Status:
                     <select id="filter-select">
                         <option value="all">All</option>
-                        <option value="safe">Safe (≥${settings.passThresholdPercent}%)</option>
-                        <option value="warning">Warning (50-74%)</option>
-                        <option value="danger">Danger (<50%)</option>
+                        <option value="at-risk">At Risk</option>
+                        <option value="safe">Safe</option>
                     </select>
                 </label>
-                <label>
-                    Filter by Type:
+                <label>Type:
                     <select id="type-filter">
                         <option value="all">All Types</option>
                         <option value="CC">CC (Core)</option>
@@ -66,218 +56,251 @@ export function renderCourses(state, container) {
                     </select>
                 </label>
             </div>
-
             <div class="courses-grid" id="courses-grid">
-                ${courses.map(c => `
-                    <div class="course-card ${getAlertClass(c.percentage, settings.passThresholdPercent)}" data-code="${c.courseCode}" data-percentage="${c.percentage}" data-units="${c.units}" data-title="${c.courseTitle}" data-type="${c.courseType}">
-                        <div class="card-header">
-                            <h4>${c.courseCode}</h4>
-                            <button class="delete-btn" data-code="${c.courseCode}">${icons.trash}</button>
-                        </div>
-                        <p class="course-title">${c.courseTitle}</p>
-                        <div class="course-details">
-                            <p><strong>Units:</strong> ${c.units}</p>
-                            <p><strong>Type:</strong> ${c.courseType}</p>
-                        </div>
-                        <div class="course-stats">
-                            <span>${c.attended}/${c.totalClasses} attended</span>
-                            <span class="percentage">${c.percentage}%</span>
-                        </div>
-                        <button class="edit-btn btn-secondary" data-code="${c.courseCode}">Edit</button>
-                    </div>
-                `).join('')}
+                ${courses.map(c => buildCourseCard(c, threshold)).join('')}
             </div>
-        </div>
-    `;
+        </div>`;
 
     container.innerHTML = html;
+    wireCoursesEvents(state, container, threshold);
+}
 
-    // Sort and filter functionality
-    const sortSelect = document.getElementById('sort-select');
+function buildCourseCard(c, threshold) {
+    const stats   = calcCourseStats(c, threshold);
+    const meta    = stats.meta;
+    const pct     = stats.percentage;
+    const barPct  = c.totalClasses > 0 ? Math.min(100, pct) : 0;
+
+    const skipsInfo = c.totalClasses === 0
+        ? '<span class="muted">No data yet</span>'
+        : stats.safeSkips > 0
+            ? `<span class="safe-skips-count">${stats.safeSkips} skip${stats.safeSkips !== 1 ? 's' : ''} left</span>`
+            : stats.lecturesNeeded > 0
+                ? `<span class="need-attend">Attend ${stats.lecturesNeeded} to recover</span>`
+                : `<span class="at-limit">At limit — 0 skips</span>`;
+
+    return `
+        <div class="course-card ${meta.cssClass}" 
+             data-code="${c.courseCode}" 
+             data-percentage="${pct}" 
+             data-units="${c.units}"
+             data-title="${c.courseTitle}"
+             data-type="${c.courseType}"
+             data-status="${stats.status}">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <h4>${c.courseCode}</h4>
+                    <span class="status-badge" style="background:${meta.color}20;color:${meta.color};border:1px solid ${meta.color}40">${meta.label}</span>
+                </div>
+                <button class="delete-btn" data-code="${c.courseCode}" title="Delete course">${icons.trash}</button>
+            </div>
+            <p class="course-title">${c.courseTitle}</p>
+            <div class="course-meta-row">
+                <span>${c.units} unit${c.units !== 1 ? 's' : ''}</span>
+                <span class="type-pill">${c.courseType}</span>
+            </div>
+
+            <div class="attendance-bar-container" title="${pct}%">
+                <div class="attendance-bar" style="width:${barPct}%;background:${meta.color}"></div>
+            </div>
+
+            <div class="course-stats">
+                <span class="attended-count">${c.attended}/${c.totalClasses} classes</span>
+                <span class="pct-badge" style="color:${meta.color};font-weight:600">${pct}%</span>
+            </div>
+            <div class="skips-row">${skipsInfo}</div>
+
+            <div class="card-actions">
+                <button class="btn-quick-attend btn-primary" data-code="${c.courseCode}" title="Mark attended">+1 Attended</button>
+                <button class="btn-quick-class btn-secondary" data-code="${c.courseCode}" title="Class held, not attended">+1 Class</button>
+                <button class="edit-btn btn-secondary" data-code="${c.courseCode}">Edit</button>
+            </div>
+        </div>`;
+}
+
+function wireCoursesEvents(state, container, threshold) {
+    const sortSelect   = document.getElementById('sort-select');
     const filterSelect = document.getElementById('filter-select');
-    const typeFilter = document.getElementById('type-filter');
-    const coursesGrid = document.getElementById('courses-grid');
+    const typeFilter   = document.getElementById('type-filter');
+    const grid         = document.getElementById('courses-grid');
 
-    function applySortAndFilter() {
-        const sortBy = sortSelect.value;
-        const filterStatus = filterSelect.value;
-        const filterType = typeFilter.value;
-        const threshold = settings.passThresholdPercent;
+    function applySortFilter() {
+        const sortBy   = sortSelect.value;
+        const statusF  = filterSelect.value;
+        const typeF    = typeFilter.value;
 
-        let courseCards = Array.from(coursesGrid.querySelectorAll('.course-card'));
+        let cards = Array.from(grid.querySelectorAll('.course-card'));
 
-        // Filter by status
-        courseCards.forEach(card => {
-            const percentage = parseFloat(card.dataset.percentage);
-            const type = card.dataset.type;
-            
-            let statusMatch = true;
-            if (filterStatus === 'safe') statusMatch = percentage >= threshold;
-            else if (filterStatus === 'warning') statusMatch = percentage >= 50 && percentage < threshold;
-            else if (filterStatus === 'danger') statusMatch = percentage < 50;
-
-            let typeMatch = filterType === 'all' || type === filterType;
-
-            card.style.display = (statusMatch && typeMatch) ? '' : 'none';
+        cards.forEach(card => {
+            const pct    = parseFloat(card.dataset.percentage);
+            const type   = card.dataset.type;
+            const status = card.dataset.status;
+            const isAtRisk = ['warning','danger','critical'].includes(status);
+            const statusOk = statusF === 'all' || (statusF === 'at-risk' && isAtRisk) || (statusF === 'safe' && !isAtRisk);
+            const typeOk   = typeF === 'all' || type === typeF;
+            card.style.display = (statusOk && typeOk) ? '' : 'none';
         });
 
-        // Sort visible cards
-        const visibleCards = courseCards.filter(card => card.style.display !== 'none');
-        
-        visibleCards.sort((a, b) => {
-            switch (sortBy) {
-                case 'code':
-                    return a.dataset.code.localeCompare(b.dataset.code);
-                case 'percentage':
-                    return parseFloat(b.dataset.percentage) - parseFloat(a.dataset.percentage);
-                case 'units':
-                    return parseFloat(b.dataset.units) - parseFloat(a.dataset.units);
-                case 'title':
-                    return a.dataset.title.localeCompare(b.dataset.title);
-                default:
-                    return 0;
-            }
+        const visible = cards.filter(c => c.style.display !== 'none');
+        visible.sort((a, b) => {
+            if (sortBy === 'risk')       return parseFloat(a.dataset.percentage) - parseFloat(b.dataset.percentage);
+            if (sortBy === 'percentage') return parseFloat(b.dataset.percentage) - parseFloat(a.dataset.percentage);
+            if (sortBy === 'units')      return parseFloat(b.dataset.units) - parseFloat(a.dataset.units);
+            return a.dataset.code.localeCompare(b.dataset.code);
         });
-
-        // Reorder in DOM
-        visibleCards.forEach(card => coursesGrid.appendChild(card));
+        visible.forEach(c => grid.appendChild(c));
     }
 
-    sortSelect.addEventListener('change', applySortAndFilter);
-    filterSelect.addEventListener('change', applySortAndFilter);
-    typeFilter.addEventListener('change', applySortAndFilter);
+    sortSelect.addEventListener('change', applySortFilter);
+    filterSelect.addEventListener('change', applySortFilter);
+    typeFilter.addEventListener('change', applySortFilter);
 
-    // Event listeners
-    document.getElementById('add-course-btn').addEventListener('click', () => {
-        showAddCourseModal(state);
-    });
+    document.getElementById('add-course-btn')?.addEventListener('click', () => showAddCourseModal(state, container));
 
-    document.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const courseCode = e.target.dataset.code;
-            showEditCourseModal(state, courseCode);
-        });
-    });
+    // Quick +1 attended
+    grid.addEventListener('click', e => {
+        const attendBtn = e.target.closest('.btn-quick-attend');
+        const classBtn  = e.target.closest('.btn-quick-class');
+        const editBtn   = e.target.closest('.edit-btn');
+        const deleteBtn = e.target.closest('.delete-btn');
 
-    document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const courseCode = e.target.dataset.code;
-            if (confirm(`Delete ${courseCode}?`)) {
-                state.deleteCourse(courseCode);
+        if (attendBtn) {
+            const code   = attendBtn.dataset.code;
+            const course = state.getCourse(code);
+            if (!course) return;
+            const newAttended = course.attended + 1;
+            const newTotal    = course.totalClasses + 1;
+            state.updateCourse(code, {
+                attended: newAttended, totalClasses: newTotal,
+                percentage: calculatePercentage(newAttended, newTotal)
+            });
+            showSuccess(`${code} — marked attended (${newAttended}/${newTotal})`);
+            renderCourses(state, container);
+        }
+
+        if (classBtn) {
+            const code   = classBtn.dataset.code;
+            const course = state.getCourse(code);
+            if (!course) return;
+            const newTotal = course.totalClasses + 1;
+            state.updateCourse(code, {
+                totalClasses: newTotal,
+                percentage: calculatePercentage(course.attended, newTotal)
+            });
+            showSuccess(`${code} — class added (${course.attended}/${newTotal})`);
+            renderCourses(state, container);
+        }
+
+        if (editBtn) showEditCourseModal(state, editBtn.dataset.code, container);
+
+        if (deleteBtn) {
+            const code = deleteBtn.dataset.code;
+            if (confirm(`Delete ${code}? This cannot be undone.`)) {
+                state.deleteCourse(code);
+                showSuccess(`${code} deleted`);
                 renderCourses(state, container);
             }
-        });
+        }
     });
 }
 
-function showAddCourseModal(state) {
+function showAddCourseModal(state, container) {
     const modal = document.createElement('div');
     modal.className = 'modal';
     modal.innerHTML = `
         <div class="modal-content">
             <h3>Add Course</h3>
-            <form id="add-course-form">
-                <label>Course Code: <input type="text" name="courseCode" required></label>
-                <label>Course Title: <input type="text" name="courseTitle" required></label>
-                <label>Units: <input type="number" name="units" min="0" required></label>
-                <label>Type: 
-                    <select name="courseType">
-                        <option value="CC">CC (Core)</option>
-                        <option value="UC">UC (University)</option>
+            <div id="add-form-fields">
+                <label>Course Code <input type="text" id="m-code" placeholder="e.g. EEE102" required></label>
+                <label>Course Title <input type="text" id="m-title" placeholder="e.g. Basic Electrical Engineering" required></label>
+                <label>Units <input type="number" id="m-units" min="0" max="10" value="2" required></label>
+                <label>Type
+                    <select id="m-type">
+                        <option value="CC">CC (Core Course)</option>
+                        <option value="UC">UC (University Course)</option>
                     </select>
                 </label>
-                <div class="modal-actions">
-                    <button type="submit" class="btn-primary">Add</button>
-                    <button type="button" class="btn-secondary cancel-btn">Cancel</button>
-                </div>
-            </form>
-        </div>
-    `;
-
+                <p id="add-error" class="error-msg" style="display:none"></p>
+            </div>
+            <div class="modal-actions">
+                <button id="m-submit" class="btn-primary">Add Course</button>
+                <button id="m-cancel" class="btn-secondary">Cancel</button>
+            </div>
+        </div>`;
     document.body.appendChild(modal);
 
-    modal.querySelector('.cancel-btn').addEventListener('click', () => {
-        modal.remove();
-    });
-
-    modal.querySelector('#add-course-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const fd = new FormData(e.target);
+    modal.querySelector('#m-cancel').addEventListener('click', () => modal.remove());
+    modal.querySelector('#m-submit').addEventListener('click', () => {
         const course = {
-            courseCode: fd.get('courseCode').toUpperCase(),
-            courseTitle: fd.get('courseTitle'),
-            units: parseInt(fd.get('units')),
-            courseType: fd.get('courseType')
+            courseCode:  modal.querySelector('#m-code').value.trim().toUpperCase(),
+            courseTitle: modal.querySelector('#m-title').value.trim(),
+            units:       parseInt(modal.querySelector('#m-units').value),
+            courseType:  modal.querySelector('#m-type').value
         };
-
-        const validation = validateCourse(course);
-        if (!validation.valid) {
-            alert(validation.errors.join('\n'));
+        const { valid, errors } = validateCourse(course);
+        if (!valid) {
+            const errEl = modal.querySelector('#add-error');
+            errEl.textContent = errors.join(' · ');
+            errEl.style.display = 'block';
             return;
         }
-
         state.addCourse(course);
         modal.remove();
-        renderCourses(state, document.getElementById('content'));
+        showSuccess(`${course.courseCode} added`);
+        renderCourses(state, container);
     });
 }
 
-function showEditCourseModal(state, courseCode) {
+function showEditCourseModal(state, courseCode, container) {
     const course = state.getCourse(courseCode);
     if (!course) return;
+
+    const history = (course.history || []).slice().reverse().slice(0, 10);
+    const historyHtml = history.length > 0
+        ? history.map(h => {
+            const pct = h.percentage ?? calculatePercentage(h.attended, h.totalClasses);
+            return `<div class="history-entry">${formatDate(h.date)} — ${h.attended}/${h.totalClasses} (${pct}%)</div>`;
+        }).join('')
+        : '<p class="muted">No history yet.</p>';
 
     const modal = document.createElement('div');
     modal.className = 'modal';
     modal.innerHTML = `
         <div class="modal-content">
             <h3>Edit ${courseCode}</h3>
-            <form id="edit-course-form">
-                <label>Attended: <input type="number" name="attended" min="0" value="${course.attended}" required></label>
-                <label>Total Classes: <input type="number" name="totalClasses" min="0" value="${course.totalClasses}" required></label>
-                <label>Notes: <input type="text" name="notes" value="${course.notes || ''}"></label>
-                <div class="modal-actions">
-                    <button type="submit" class="btn-primary">Update</button>
-                    <button type="button" class="btn-secondary cancel-btn">Cancel</button>
-                </div>
-            </form>
-        </div>
-    `;
-
+            <label>Classes Attended <input type="number" id="e-attended" min="0" value="${course.attended}"></label>
+            <label>Total Classes Held <input type="number" id="e-total" min="0" value="${course.totalClasses}"></label>
+            <label>Notes <input type="text" id="e-notes" value="${course.notes || ''}" placeholder="Optional notes"></label>
+            <div class="history-section">
+                <h4>Change History</h4>
+                <div class="history-list">${historyHtml}</div>
+            </div>
+            <p id="edit-error" class="error-msg" style="display:none"></p>
+            <div class="modal-actions">
+                <button id="e-submit" class="btn-primary">Update</button>
+                <button id="e-cancel" class="btn-secondary">Cancel</button>
+            </div>
+        </div>`;
     document.body.appendChild(modal);
 
-    modal.querySelector('.cancel-btn').addEventListener('click', () => {
-        modal.remove();
-    });
-
-    modal.querySelector('#edit-course-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const fd = new FormData(e.target);
-        const attended = parseInt(fd.get('attended'));
-        const totalClasses = parseInt(fd.get('totalClasses'));
-        const notes = fd.get('notes');
-
-        const validation = validateAttendance(attended, totalClasses);
-        if (!validation.valid) {
-            alert(validation.errors.join('\n'));
+    modal.querySelector('#e-cancel').addEventListener('click', () => modal.remove());
+    modal.querySelector('#e-submit').addEventListener('click', () => {
+        const attended    = parseInt(modal.querySelector('#e-attended').value);
+        const totalClasses = parseInt(modal.querySelector('#e-total').value);
+        const notes       = modal.querySelector('#e-notes').value.trim();
+        const { valid, errors } = validateAttendance(attended, totalClasses);
+        if (!valid) {
+            const errEl = modal.querySelector('#edit-error');
+            errEl.textContent = errors.join(' · ');
+            errEl.style.display = 'block';
             return;
         }
-
         state.updateCourse(courseCode, {
-            attended,
-            totalClasses,
-            percentage: calculatePercentage(attended, totalClasses),
-            notes
+            attended, totalClasses, notes,
+            percentage: calculatePercentage(attended, totalClasses)
         });
         modal.remove();
-        renderCourses(state, document.getElementById('content'));
+        showSuccess(`${courseCode} updated`);
+        renderCourses(state, container);
     });
-}
-
-function getAlertClass(percentage, threshold = 75) {
-    // 5-level evaluation system
-    if (percentage >= 90) return 'alert-excellent';
-    if (percentage >= 80) return 'alert-safe';
-    if (percentage >= threshold + 3) return 'alert-near-boundary';
-    if (percentage >= threshold) return 'alert-warning';
-    return 'alert-danger';
 }

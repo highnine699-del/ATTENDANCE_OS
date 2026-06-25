@@ -34,3 +34,19 @@
     --radius: 0.5rem;
     --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
+
+.theme-light {
+    --primary:        #10b981;
+    --primary-dark:   #059669;
+    --primary-light:  #059669;
+    --bg-dark:        #f1f5f9;
+    --bg-darker:      #ffffff;
+    --text-primary:   #0f172a;
+    --text-secondary: #475569;
+    --border:         #cbd5e1;
+    --alert-danger:   #ef4444;
+    --alert-warning:  #f59e0b;
+    --alert-success:  #10b981;
+    --alert-info:     #3b82f6;
+    --shadow:         0 4px 12px rgba(0, 0, 0, 0.08);
+}

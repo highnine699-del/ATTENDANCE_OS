@@ -1,145 +1,153 @@
 import { validateSettings } from '../validator.js';
 import { exportState, importState, clearState } from '../storage.js';
 import { icons } from '../icons.js';
+import { showSuccess, showError } from '../toast.js';
 
 export function renderSettings(state, container) {
-    const settings = state.getSettings();
-    const semesterInfo = state.getSemesterInfo();
+    const settings  = state.getSettings();
+    const semInfo   = state.getSemesterInfo();
 
-    const html = `
+    container.innerHTML = `
         <div class="settings-module">
             <h2>Settings</h2>
-            
+
             <div class="settings-section">
                 <h3>${icons.edit} User Settings</h3>
-                <form id="settings-form">
-                    <label>
-                        Your Name: 
-                        <input type="text" name="userName" value="${settings.userName || ''}" placeholder="Enter your name">
-                    </label>
-                    <label>
-                        Pass Threshold (%): 
-                        <input type="number" name="passThresholdPercent" min="0" max="100" value="${settings.passThresholdPercent}">
-                    </label>
-                    <label>
-                        Theme: 
-                        <select name="theme">
-                            <option value="dark" ${settings.theme === 'dark' ? 'selected' : ''}>Dark</option>
-                            <option value="light" ${settings.theme === 'light' ? 'selected' : ''}>Light</option>
-                        </select>
-                    </label>
-                    <label>
-                        <input type="checkbox" name="autoSync" ${settings.autoSync ? 'checked' : ''}>
-                        Auto-sync on load
-                    </label>
-                    <button type="submit" class="btn-primary">Save Settings</button>
-                </form>
+                <label>Your Name <input type="text" id="s-name" value="${settings.userName || ''}" placeholder="e.g. Josiah Odetayo"></label>
+                <label>Pass Threshold (%)
+                    <input type="number" id="s-threshold" min="0" max="100" value="${settings.passThresholdPercent}">
+                    <span class="control-sub">LMU default is 75%</span>
+                </label>
+                <label>Theme
+                    <select id="s-theme">
+                        <option value="dark"  ${settings.theme === 'dark'  ? 'selected' : ''}>Dark</option>
+                        <option value="light" ${settings.theme === 'light' ? 'selected' : ''}>Light</option>
+                    </select>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="s-autosync" ${settings.autoSync ? 'checked' : ''}>
+                    Auto-sync from extension on page load
+                </label>
+                <button id="s-save" class="btn-primary">Save Settings</button>
             </div>
 
             <div class="settings-section">
                 <h3>${icons.calendar} Semester Info</h3>
-                <form id="semester-form">
-                    <label>Start Date: <input type="date" name="startDate" value="${semesterInfo.startDate || ''}"></label>
-                    <label>End Date: <input type="date" name="endDate" value="${semesterInfo.endDate || ''}"></label>
-                    <label>Lecture Weeks: <input type="number" name="lectureWeeks" min="0" value="${semesterInfo.lectureWeeks || 13}"></label>
-                    <label>Exam Date: <input type="date" name="examDate" value="${semesterInfo.examDate || ''}"></label>
-                    <button type="submit" class="btn-secondary">Update Semester</button>
-                </form>
+                <label>Start Date  <input type="date" id="si-start" value="${semInfo.startDate || ''}"></label>
+                <label>End Date    <input type="date" id="si-end"   value="${semInfo.endDate || ''}"></label>
+                <label>Lecture Weeks <input type="number" id="si-weeks" min="1" max="30" value="${semInfo.lectureWeeks || 13}"></label>
+                <label>Exam Date   <input type="date" id="si-exam"  value="${semInfo.examDate || ''}"></label>
+                <button id="si-save" class="btn-secondary">Update Semester</button>
             </div>
 
             <div class="settings-section">
                 <h3>${icons.clipboard} Data Management</h3>
                 <div class="data-actions">
-                    <button id="export-btn" class="btn-secondary">Export Data</button>
-                    <button id="import-btn" class="btn-secondary">Import Data</button>
-                    <button id="reset-btn" class="btn-secondary" style="background: var(--alert-danger);">Reset All Data</button>
+                    <button id="export-json-btn" class="btn-secondary">Export JSON</button>
+                    <button id="export-csv-btn"  class="btn-secondary">Export CSV</button>
+                    <button id="import-btn"      class="btn-secondary">Import JSON</button>
+                    <button id="reset-btn" class="btn-secondary btn-danger">Reset All Data</button>
                 </div>
-                <input type="file" id="import-file" accept=".json" style="display: none;">
+                <input type="file" id="import-file" accept=".json" style="display:none">
             </div>
-        </div>
-    `;
+        </div>`;
 
-    container.innerHTML = html;
-
-    // Event listeners
-    document.getElementById('settings-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const fd = new FormData(e.target);
+    // Save user settings
+    document.getElementById('s-save').addEventListener('click', () => {
+        const prevTheme = settings.theme;
         const updates = {
-            userName: fd.get('userName'),
-            passThresholdPercent: parseInt(fd.get('passThresholdPercent')),
-            theme: fd.get('theme'),
-            autoSync: fd.get('autoSync') === 'on'
+            userName:              document.getElementById('s-name').value.trim(),
+            passThresholdPercent:  parseInt(document.getElementById('s-threshold').value),
+            theme:                 document.getElementById('s-theme').value,
+            autoSync:              document.getElementById('s-autosync').checked
         };
-
-        const validation = validateSettings(updates);
-        if (!validation.valid) {
-            alert(validation.errors.join('\n'));
-            return;
-        }
-
+        const { valid, errors } = validateSettings(updates);
+        if (!valid) { showError(errors.join(' · ')); return; }
         state.updateSettings(updates);
-        alert('Settings saved!');
-        
-        // Update user display if name changed
-        if (updates.userName) {
-            window.updateUserDisplay && window.updateUserDisplay();
+        window.updateUserDisplay?.();
+        if (updates.theme !== prevTheme) {
+            window.applyTheme?.(updates.theme);
+            const activeModule = document.querySelector('.nav-item.active')?.dataset.module;
+            if (activeModule && activeModule !== 'settings') {
+                document.querySelector(`[data-module="${activeModule}"]`)?.click();
+            }
         }
+        showSuccess('Settings saved');
     });
 
-    document.getElementById('semester-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const fd = new FormData(e.target);
-        const updates = {
-            startDate: fd.get('startDate'),
-            endDate: fd.get('endDate'),
-            lectureWeeks: parseInt(fd.get('lectureWeeks')),
-            examDate: fd.get('examDate')
-        };
-
-        state.updateSemesterInfo(updates);
-        alert('Semester info updated!');
+    // Save semester info — FIX: was state.state.semesterInfo = {...} bypassing notify()
+    document.getElementById('si-save').addEventListener('click', () => {
+        state.updateSemesterInfo({
+            startDate:    document.getElementById('si-start').value,
+            endDate:      document.getElementById('si-end').value,
+            lectureWeeks: parseInt(document.getElementById('si-weeks').value) || 13,
+            examDate:     document.getElementById('si-exam').value
+        });
+        showSuccess('Semester info updated');
     });
 
-    document.getElementById('export-btn').addEventListener('click', () => {
+    // Export JSON
+    document.getElementById('export-json-btn').addEventListener('click', () => {
         const data = exportState();
-        if (data) {
-            const blob = new Blob([data], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'attendance-os-backup.json';
-            a.click();
-            URL.revokeObjectURL(url);
-        }
+        if (!data) { showError('Nothing to export'); return; }
+        const blob = new Blob([data], { type: 'application/json' });
+        const url  = URL.createObjectURL(blob);
+        const a    = Object.assign(document.createElement('a'), {
+            href: url, download: `attendance-os-backup-${new Date().toISOString().slice(0,10)}.json`
+        });
+        a.click(); URL.revokeObjectURL(url);
+        showSuccess('JSON exported');
     });
 
-    document.getElementById('import-btn').addEventListener('click', () => {
-        document.getElementById('import-file').click();
+    // Export CSV
+    document.getElementById('export-csv-btn').addEventListener('click', () => {
+        const courses = state.getCourses();
+        const threshold = settings.passThresholdPercent || 75;
+        const rows = [
+            ['Course Code','Course Title','Units','Type','Attended','Total','Percentage','Status','Safe Skips'],
+            ...courses.map(c => {
+                const pct    = c.totalClasses > 0 ? Math.round((c.attended/c.totalClasses)*1000)/10 : 0;
+                const status = pct >= threshold ? 'Safe' : pct >= threshold - 15 ? 'Warning' : 'Danger';
+                const skips  = c.totalClasses > 0 && pct >= threshold
+                    ? Math.max(0, Math.floor((c.attended*100 - threshold*c.totalClasses)/threshold)) : 0;
+                return [c.courseCode, `"${c.courseTitle}"`, c.units, c.courseType, c.attended, c.totalClasses, pct+'%', status, skips];
+            })
+        ];
+        const csv  = rows.map(r => r.join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url  = URL.createObjectURL(blob);
+        const a    = Object.assign(document.createElement('a'), {
+            href: url, download: `attendance-os-${new Date().toISOString().slice(0,10)}.csv`
+        });
+        a.click(); URL.revokeObjectURL(url);
+        showSuccess('CSV exported');
     });
 
-    document.getElementById('import-file').addEventListener('change', (e) => {
+    // Import JSON
+    document.getElementById('import-btn').addEventListener('click', () =>
+        document.getElementById('import-file').click());
+
+    document.getElementById('import-file').addEventListener('change', e => {
         const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const success = importState(event.target.result);
-                if (success) {
-                    alert('Data imported successfully! Refreshing...');
-                    location.reload();
-                } else {
-                    alert('Failed to import data. Invalid JSON format.');
-                }
-            };
-            reader.readAsText(file);
-        }
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+            if (importState(ev.target.result)) {
+                showSuccess('Data imported — reloading...');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showError('Import failed — invalid JSON');
+            }
+        };
+        reader.readAsText(file);
     });
 
+    // Reset
     document.getElementById('reset-btn').addEventListener('click', () => {
-        if (confirm('Are you sure you want to reset all data? This cannot be undone.')) {
+        if (confirm('Reset ALL data? This cannot be undone.')) {
             clearState();
-            alert('Data reset. Refreshing...');
-            location.reload();
+            showSuccess('Data cleared — reloading...');
+            setTimeout(() => location.reload(), 1000);
         }
     });
 }

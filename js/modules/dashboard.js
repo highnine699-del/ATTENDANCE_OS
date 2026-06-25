@@ -1,47 +1,39 @@
-import { calculateWeightedAttendance, getCourseStatsSummary } from '../engine.js';
+import { calculateWeightedAttendance, getCourseStatsSummary, calcCourseStats, calculatePercentage, calculateSafeSkips, getStatus, getStatusMeta } from '../engine.js';
 import { formatDateTime } from '../utils.js';
 import { icons } from '../icons.js';
 
 function getSemesterProgress(semesterInfo) {
     if (!semesterInfo.startDate || !semesterInfo.endDate) return null;
-    
-    const now = new Date();
+    const now   = new Date();
     const start = new Date(semesterInfo.startDate);
-    const end = new Date(semesterInfo.endDate);
-    
-    if (now < start) return { progress: 0, daysRemaining: Math.ceil((end - start) / (1000 * 60 * 60 * 24)) };
-    if (now > end) return { progress: 100, daysRemaining: 0 };
-    
-    // Calculate progress based on lecture weeks if available, otherwise calendar days
+    const end   = new Date(semesterInfo.endDate);
+    if (now < start) return { progress: 0, daysRemaining: Math.ceil((end - start) / 864e5) };
+    if (now > end)   return { progress: 100, daysRemaining: 0 };
     if (semesterInfo.lectureWeeks) {
-        const totalWeeks = parseInt(semesterInfo.lectureWeeks);
-        const totalDays = totalWeeks * 7;
-        const elapsedDays = (now - start) / (1000 * 60 * 60 * 24);
-        const currentWeek = Math.ceil(elapsedDays / 7);
-        const progress = Math.min(100, Math.round((currentWeek / totalWeeks) * 100));
-        const daysRemaining = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
+        const totalWeeks  = parseInt(semesterInfo.lectureWeeks);
+        const elapsedDays = (now - start) / 864e5;
+        const currentWeek = Math.min(Math.ceil(elapsedDays / 7), totalWeeks);
+        const progress    = Math.round((currentWeek / totalWeeks) * 100);
+        const daysRemaining = Math.ceil((end - now) / 864e5);
         return { progress, daysRemaining, currentWeek, totalWeeks };
     }
-    
-    // Fallback to calendar days
-    const totalDays = (end - start) / (1000 * 60 * 60 * 24);
-    const elapsedDays = (now - start) / (1000 * 60 * 60 * 24);
-    const progress = Math.round((elapsedDays / totalDays) * 100);
-    const daysRemaining = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
-    
-    return { progress, daysRemaining };
+    const total   = (end - start) / 864e5;
+    const elapsed = (now - start) / 864e5;
+    return { progress: Math.round((elapsed / total) * 100), daysRemaining: Math.ceil((end - now) / 864e5) };
 }
 
 export function renderDashboard(state, container) {
-    const courses = state.getCourses();
-    const settings = state.getSettings();
-    const semesterInfo = state.getSemesterInfo();
-    const stats = getCourseStatsSummary(courses, settings.passThresholdPercent);
+    const courses    = state.getCourses();
+    const settings   = state.getSettings();
+    const semInfo    = state.getSemesterInfo();
+    const threshold  = settings.passThresholdPercent || 75;
+    const lastSync   = state.getLastSync(); // FIX: was state.state.lastSync
     const weightedAvg = calculateWeightedAttendance(courses);
-    const lastSync = state.getLastSync();
-    const semesterProgress = getSemesterProgress(semesterInfo);
+    const stats      = getCourseStatsSummary(courses, threshold);
+    const semProg    = getSemesterProgress(semInfo);
+    const overallStatus = getStatus(weightedAvg, threshold);
+    const overallMeta   = getStatusMeta(overallStatus);
 
-    // Empty state when no courses
     if (courses.length === 0) {
         container.innerHTML = `
             <div class="dashboard">
@@ -49,96 +41,153 @@ export function renderDashboard(state, container) {
                 <div class="empty-state">
                     <div class="empty-icon">${icons.book}</div>
                     <h3>No Courses Yet</h3>
-                    <p>Start by adding your courses or syncing from the LMU portal.</p>
-                    <button onclick="document.querySelector('[data-module=\"sync\"]').click()" class="btn-primary">Sync Your Courses</button>
+                    <p>Start by syncing from the LMU portal or add courses manually.</p>
+                    <button onclick="document.querySelector('[data-module=\"sync\"]').click()" class="btn-primary">Sync Now</button>
                 </div>
-            </div>
-        `;
+            </div>`;
         return;
     }
 
-    const html = `
+    // All courses sorted by percentage ascending (worst first)
+    const sortedCourses = [...courses]
+        .filter(c => c.totalClasses > 0)
+        .sort((a, b) => calculatePercentage(a.attended, a.totalClasses) - calculatePercentage(b.attended, b.totalClasses));
+
+    const atRisk   = sortedCourses.filter(c => calculatePercentage(c.attended, c.totalClasses) < threshold);
+    const allSafe  = atRisk.length === 0;
+    const critical = sortedCourses.filter(c => calculatePercentage(c.attended, c.totalClasses) < threshold - 25);
+    const activeCourses = courses.filter(c => c.totalClasses > 0);
+
+    container.innerHTML = `
         <div class="dashboard">
             <h2>Dashboard</h2>
-            
-            <div class="health-card">
-                <div class="health-score">
-                    <div class="score-circle" data-status="${getHealthStatus(weightedAvg, settings.passThresholdPercent)}">
-                        ${weightedAvg}%
-                    </div>
-                    <div class="score-label">Weighted Attendance</div>
+
+            ${activeCourses.length > 0 ? `
+            <div class="skip-today-widget">
+                <h3>Can I skip today?</h3>
+                <div class="skip-today-controls">
+                    <select id="skip-course-select">
+                        <option value="">— Select a course —</option>
+                        ${activeCourses.map(c => `<option value="${c.courseCode}">${c.courseCode} — ${c.courseTitle}</option>`).join('')}
+                    </select>
                 </div>
-                <div class="health-summary">
-                    <p class="summary-text">
-                        ${stats.safe} safe | ${stats.warning} warning | ${stats.danger} danger
-                    </p>
+                <div id="skip-today-result" class="skip-today-result" style="display:none"></div>
+            </div>` : ''}
+
+            ${critical.length > 0 ? `
+            <div class="alert-banner alert-critical">
+                ⚠️ ${critical.length} course${critical.length > 1 ? 's' : ''} critically below threshold:
+                ${critical.map(c => `<strong>${c.courseCode}</strong>`).join(', ')}
+            </div>` : ''}
+
+            <div class="health-card" style="border-color:${overallMeta.color}40">
+                <div class="health-score">
+                    <div class="score-circle" style="color:${overallMeta.color};border-color:${overallMeta.color}">
+                        ${weightedAvg > 0 ? weightedAvg + '%' : '—'}
+                    </div>
+                    <div class="score-label">Weighted Average</div>
+                    <div class="score-status" style="color:${overallMeta.color}">${overallMeta.label}</div>
+                </div>
+                <div class="health-grid">
+                    <div class="health-stat">
+                        <span class="stat-num" style="color:var(--alert-success)">${stats.safe}</span>
+                        <span class="stat-label">Safe</span>
+                    </div>
+                    <div class="health-stat">
+                        <span class="stat-num" style="color:var(--alert-warning)">${stats.warning}</span>
+                        <span class="stat-label">Warning</span>
+                    </div>
+                    <div class="health-stat">
+                        <span class="stat-num" style="color:var(--alert-danger)">${stats.danger}</span>
+                        <span class="stat-label">Danger</span>
+                    </div>
+                    <div class="health-stat">
+                        <span class="stat-num">${courses.length - (courses.length - stats.withData)}</span>
+                        <span class="stat-label">Active</span>
+                    </div>
                 </div>
             </div>
 
-            ${semesterProgress ? `
+            ${semProg ? `
             <div class="progress-card">
-                <h3>${icons.progress} Semester Progress</h3>
+                <h3>${icons.calendar} Semester — Week ${semProg.currentWeek || '?'} of ${semProg.totalWeeks || semInfo.lectureWeeks}</h3>
                 <div class="progress-bar-container">
-                    <div class="progress-bar" style="width: ${semesterProgress.progress}%"></div>
+                    <div class="progress-bar" style="width:${semProg.progress}%"></div>
                 </div>
                 <div class="progress-stats">
-                    <span>${semesterProgress.progress}% complete</span>
-                    <span>${semesterProgress.daysRemaining} days remaining</span>
+                    <span>${semProg.progress}% complete</span>
+                    <span>${semProg.daysRemaining} days remaining</span>
                 </div>
-                ${semesterInfo.examDate ? `<p class="exam-countdown">${icons.clock} Exams: ${new Date(semesterInfo.examDate).toLocaleDateString()}</p>` : ''}
-            </div>
-            ` : ''}
+                ${semInfo.examDate ? `<p class="exam-countdown">${icons.clock} Exams: ${new Date(semInfo.examDate).toLocaleDateString()}</p>` : ''}
+            </div>` : ''}
 
-            <div class="semester-info">
-                <h3>${icons.calendar} Semester Info</h3>
-                ${semesterInfo.startDate ? `<p><strong>Start:</strong> ${new Date(semesterInfo.startDate).toLocaleDateString()}</p>` : ''}
-                ${semesterInfo.endDate ? `<p><strong>End:</strong> ${new Date(semesterInfo.endDate).toLocaleDateString()}</p>` : ''}
-                ${semesterInfo.lectureWeeks ? `<p><strong>Lecture Weeks:</strong> ${semesterInfo.lectureWeeks}</p>` : ''}
-                ${semesterInfo.examDate ? `<p><strong>Exam Date:</strong> ${new Date(semesterInfo.examDate).toLocaleDateString()}</p>` : ''}
-            </div>
-
-            <div class="sync-info">
-                <p>Last synced: ${lastSync ? formatDateTime(lastSync) : 'Never'}</p>
-            </div>
-
-            <h3>${icons.book} Courses at Risk</h3>
-            <div class="courses-grid">
-                ${courses
-                    .filter(c => c.percentage < settings.passThresholdPercent)
-                    .sort((a, b) => a.percentage - b.percentage)
-                    .map(c => `
-                        <div class="course-card ${getAlertClass(c.percentage, settings.passThresholdPercent)}">
-                            <h4>${c.courseCode}</h4>
-                            <p class="course-title">${c.courseTitle}</p>
-                            <div class="course-stats">
-                                <span>${c.attended}/${c.totalClasses} attended</span>
-                                <span class="percentage">${c.percentage}%</span>
+            <h3 style="margin-top:var(--space-xl)">${icons.book} All Courses ${allSafe ? '— <span style="color:var(--alert-success)">All Safe! 🎉</span>' : ''}</h3>
+            <div class="dashboard-course-list">
+                ${sortedCourses.map(c => {
+                    const cstats = calcCourseStats(c, threshold);
+                    const pct    = cstats.percentage;
+                    const meta   = cstats.meta;
+                    const barPct = Math.min(100, pct);
+                    const action = cstats.safeSkips > 0
+                        ? `${cstats.safeSkips} skip${cstats.safeSkips !== 1 ? 's' : ''} left`
+                        : cstats.lecturesNeeded > 0
+                        ? `Need ${cstats.lecturesNeeded} to recover`
+                        : 'At limit';
+                    return `
+                        <div class="dash-course-row ${meta.cssClass}">
+                            <div class="dcr-left">
+                                <span class="dcr-code">${c.courseCode}</span>
+                                <span class="dcr-name">${c.courseTitle}</span>
                             </div>
+                            <div class="dcr-bar-wrap">
+                                <div class="dcr-bar" style="width:${barPct}%;background:${meta.color}"></div>
+                                <span class="dcr-threshold" style="left:${threshold}%"></span>
+                            </div>
+                            <div class="dcr-right">
+                                <span class="dcr-pct" style="color:${meta.color}">${pct}%</span>
+                                <span class="dcr-action">${action}</span>
+                            </div>
+                        </div>`;
+                }).join('')}
+                ${courses.filter(c => c.totalClasses === 0).map(c => `
+                    <div class="dash-course-row alert-no-data">
+                        <div class="dcr-left">
+                            <span class="dcr-code">${c.courseCode}</span>
+                            <span class="dcr-name">${c.courseTitle}</span>
                         </div>
-                    `)
-                    .join('')}
+                        <div class="dcr-bar-wrap"><div class="dcr-bar" style="width:0%"></div></div>
+                        <div class="dcr-right">
+                            <span class="dcr-pct" style="color:var(--text-secondary)">—</span>
+                            <span class="dcr-action muted">No data</span>
+                        </div>
+                    </div>`).join('')}
             </div>
 
-            ${courses.filter(c => c.percentage < settings.passThresholdPercent).length === 0 
-                ? `<p style="color: var(--alert-success); margin-top: var(--space-lg);">${icons.party} All courses are safe!</p>` 
-                : ''}
-        </div>
-    `;
+            <p class="sync-timestamp">Last synced: ${lastSync ? formatDateTime(lastSync) : 'Never'}</p>
+        </div>`;
 
-    container.innerHTML = html;
-}
-
-function getHealthStatus(percentage, threshold) {
-    if (percentage >= threshold) return 'safe';
-    if (percentage >= 50) return 'warning';
-    return 'danger';
-}
-
-function getAlertClass(percentage, threshold = 75) {
-    // 5-level evaluation system
-    if (percentage >= 90) return 'alert-excellent';
-    if (percentage >= 80) return 'alert-safe';
-    if (percentage >= threshold + 3) return 'alert-near-boundary';
-    if (percentage >= threshold) return 'alert-warning';
-    return 'alert-danger';
+    const skipSelect = document.getElementById('skip-course-select');
+    const skipResult = document.getElementById('skip-today-result');
+    if (skipSelect && skipResult) {
+        function updateSkipAnswer() {
+            const code = skipSelect.value;
+            if (!code) {
+                skipResult.style.display = 'none';
+                return;
+            }
+            const course = state.getCourse(code);
+            if (!course) return;
+            const safeSkips = calculateSafeSkips(course.attended, course.totalClasses, threshold);
+            if (safeSkips > 0) {
+                skipResult.style.display = 'block';
+                skipResult.className = 'skip-today-result yes';
+                skipResult.textContent = `YES — ${safeSkips} skip${safeSkips !== 1 ? 's' : ''} left`;
+            } else {
+                skipResult.style.display = 'block';
+                skipResult.className = 'skip-today-result no';
+                skipResult.textContent = 'NO — attend this class';
+            }
+        }
+        skipSelect.addEventListener('change', updateSkipAnswer);
+    }
 }

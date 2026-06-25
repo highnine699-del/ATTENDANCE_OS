@@ -55,3 +55,35 @@ function scrapeAttendanceTable() {
 
     return { courses, semesterInfo };
 }
+
+function tryAutoScrape() {
+    const table = document.querySelector('table tbody tr');
+    if (!table) return;
+
+    const data = scrapeAttendanceTable();
+    if (data.courses.length === 0) return;
+
+    chrome.storage.local.set({ attendanceData: data }, () => {
+        const atRisk = data.courses.filter(c => c.percentage < 75).length;
+        chrome.runtime.sendMessage({
+            action: 'updateBadge',
+            count: atRisk
+        });
+        showSyncIndicator(data.courses.length);
+    });
+}
+
+function showSyncIndicator(count) {
+    const div = Object.assign(document.createElement('div'), {
+        textContent: `✓ Attendance OS synced ${count} courses`,
+        style: 'position:fixed;bottom:16px;right:16px;background:#10b981;color:#fff;padding:8px 14px;border-radius:8px;font-size:13px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.3);'
+    });
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 4000);
+}
+
+if (document.readyState === 'complete') {
+    tryAutoScrape();
+} else {
+    window.addEventListener('load', tryAutoScrape);
+}

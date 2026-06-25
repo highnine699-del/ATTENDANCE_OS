@@ -10,7 +10,7 @@ async function processImageOCR(imageFile) {
         reader.onload = async (e) => {
             try {
                 const result = await Tesseract.recognize(e.target.result, 'eng', {
-                    logger: m => {}
+                    logger: m => console.log(m)
                 });
                 resolve(result.data.text);
             } catch (err) {
@@ -46,7 +46,7 @@ function parsePortalTable(text) {
         
         // Expected format: SN COURSE UNITS LECTURE_WEEKS TOTAL_CLASS NO_ATTENDED NO_SUPPRESSED PERCENTAGE APPROVAL
         if (parts.length >= 8) {
-            const courseCode = parts[1];
+            const courseCode = parts[1].trim().toUpperCase();
             const unitsText = parts[2];
             const totalClasses = parseInt(parts[4]) || 0;
             const attended = parseInt(parts[5]) || 0;

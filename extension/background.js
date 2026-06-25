@@ -26,19 +26,48 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     if (request.action === 'saveAttendanceData') {
         chrome.storage.local.set({ attendanceData: request.data }, () => {
+            updateBadgeFromData(request.data);
             sendResponse({ success: true });
         });
         return true;
     }
+
+    if (request.action === 'updateBadge') {
+        const count = request.count;
+        if (count > 0) {
+            chrome.action.setBadgeText({ text: count.toString() });
+            chrome.action.setBadgeBackgroundColor({ color: '#ef4444' });
+        } else {
+            chrome.action.setBadgeText({ text: '' });
+        }
+        sendResponse({ success: true });
+        return true;
+    }
 });
 
+function updateBadgeFromData(data) {
+    const count = (data?.courses || []).filter(c => c.percentage < 75).length;
+    if (count > 0) {
+        chrome.action.setBadgeText({ text: count.toString() });
+        chrome.action.setBadgeBackgroundColor({ color: '#ef4444' });
+    } else {
+        chrome.action.setBadgeText({ text: '' });
+    }
+}
+
 async function scrapeAttendanceFromTab(tabId) {
-    // Inject content scraper into tab
     await chrome.tabs.sendMessage(tabId, { action: 'scrape' });
-    return new Promise((resolve) => {
-        const listener = (request, sender) => {
+    return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+            chrome.runtime.onMessage.removeListener(listener);
+            reject(new Error('Scrape timed out. Make sure you are on the LMU attendance page.'));
+        }, 10000);
+
+        const listener = (request) => {
             if (request.action === 'scraped') {
+                clearTimeout(timeout);
                 chrome.runtime.onMessage.removeListener(listener);
+                updateBadgeFromData(request.data);
                 resolve(request.data);
             }
         };
