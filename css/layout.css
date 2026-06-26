@@ -1,152 +1,229 @@
+/* ── App shell ───────────────────────────────────────────────────── */
 #app {
     display: flex;
     height: 100vh;
-    background: var(--bg-dark);
-    color: var(--text-primary);
+    overflow: hidden;
 }
 
+/* ── Sidebar ─────────────────────────────────────────────────────── */
 #sidebar {
-    width: 280px;
-    background: var(--bg-darker);
-    border-right: 1px solid var(--border);
+    width: 240px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
     padding: var(--space-lg);
+    gap: var(--space-md);
+    /* Glass panel */
+    background: var(--glass-2);
+    backdrop-filter: var(--blur-md);
+    -webkit-backdrop-filter: var(--blur-md);
+    border-right: 1px solid var(--border);
+    /* Subtle inner highlight at top */
+    box-shadow: inset -1px 0 0 var(--border-dim),
+                1px 0 30px rgba(0,0,0,0.3);
     overflow-y: auto;
+    position: relative;
+    z-index: 10;
+}
+
+/* Subtle gradient shimmer down the sidebar */
+#sidebar::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 200px;
+    background: linear-gradient(180deg,
+        rgba(16,185,129,0.05) 0%,
+        transparent 100%);
+    pointer-events: none;
 }
 
 #sidebar header {
-    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--border-dim);
 }
 
-#content {
-    flex: 1;
-    padding: var(--space-xl);
-    overflow-y: auto;
+#sidebar header h1 {
+    font-size: var(--fs-lg);
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
 }
 
+#sidebar header h1 .icon-chart svg {
+    color: var(--primary);
+    filter: drop-shadow(0 0 6px var(--primary-glow));
+}
+
+.subtitle {
+    font-size: var(--fs-xs);
+    color: var(--text-muted);
+    margin-top: 2px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.user-display {
+    font-size: var(--fs-sm);
+    color: var(--primary);
+    margin-top: var(--space-sm);
+    font-weight: 500;
+}
+
+/* ── Navigation ──────────────────────────────────────────────────── */
 #nav-menu {
     display: flex;
     flex-direction: column;
-    gap: var(--space-sm);
-    margin: var(--space-lg) 0;
+    gap: 4px;
+    flex: 1;
 }
 
 .nav-item {
     background: transparent;
-    border: 1px solid var(--border);
+    border: 1px solid transparent;
     color: var(--text-secondary);
-    padding: var(--space-md);
+    padding: 10px 14px;
     border-radius: var(--radius);
     cursor: pointer;
-    transition: all 0.3s;
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    font-family: var(--font-sans);
     text-align: left;
-    font-size: var(--fs-md);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.01em;
 }
 
-.nav-item:hover, .nav-item.active {
+.nav-item::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
     background: var(--primary);
-    color: white;
-    border-color: var(--primary);
+    border-radius: 0 2px 2px 0;
+    transform: scaleY(0);
+    transition: transform 0.2s ease;
 }
 
-.courses-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: var(--space-lg);
-    margin-top: var(--space-lg);
+.nav-item:hover {
+    background: var(--glass-hover);
+    border-color: var(--border-dim);
+    color: var(--text-primary);
 }
 
-@media (max-width: 480px) {
-    .courses-grid {
-        grid-template-columns: 1fr;
-        gap: var(--space-md);
-    }
+.nav-item.active {
+    background: var(--glass-active);
+    border-color: var(--border-accent);
+    color: var(--primary);
+    font-weight: 600;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05),
+                0 0 20px var(--primary-glow-sm);
 }
 
-.dashboard {
-    max-width: 1200px;
+.nav-item.active::before {
+    transform: scaleY(1);
 }
 
-.sync-module {
-    max-width: 800px;
-}
-
-@media (max-width: 768px) {
-    #app {
-        flex-direction: column;
-        height: 100vh;
-        overflow: hidden;
-    }
-    #sidebar {
-        width: 100%;
-        max-height: auto;
-        padding: var(--space-md);
-        flex-shrink: 0;
-    }
-    #sidebar header {
-        margin-bottom: var(--space-sm);
-    }
-    #sidebar header h1 {
-        font-size: var(--fs-lg);
-    }
-    #nav-menu {
-        flex-direction: row;
-        flex-wrap: wrap;
-        gap: var(--space-xs);
-        margin: var(--space-sm) 0;
-    }
-    .nav-item {
-        flex: 1;
-        min-width: 100px;
-        padding: var(--space-sm);
-        font-size: var(--fs-sm);
-        text-align: center;
-    }
-    #content {
-        padding: var(--space-md);
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-    .sidebar-footer {
-        margin-top: var(--space-sm);
-        padding: var(--space-sm);
-    }
-    .sync-status {
-        margin-top: var(--space-sm);
-    }
-    .sync-status button {
-        width: 100%;
-    }
-}
-
-/* Android-specific optimizations */
-@media (max-width: 480px) {
-    #sidebar header h1 {
-        font-size: var(--fs-md);
-    }
-    .subtitle {
-        font-size: var(--fs-sm);
-    }
-    .nav-item {
-        min-width: 80px;
-        font-size: var(--fs-xs);
-        padding: var(--space-xs);
-    }
-    #content {
-        padding: var(--space-sm);
-    }
-}
-
+/* ── Sidebar footer ───────────────────────────────────────────────── */
 .sidebar-footer {
-    margin-top: var(--space-lg);
-    padding: var(--space-md);
-    border-top: 1px solid var(--border);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--border-dim);
     display: flex;
     justify-content: center;
 }
 
-.user-display {
-    font-size: 0.8rem;
+.theme-toggle {
+    background: var(--glass-2);
+    border: 1px solid var(--border);
     color: var(--text-secondary);
-    margin-top: var(--space-sm);
-    font-weight: 500;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    font-size: 0;
+}
+.theme-toggle:hover {
+    background: var(--glass-3);
+    border-color: var(--border-bright);
+    color: var(--text-primary);
+    box-shadow: 0 0 12px var(--primary-glow-sm);
+}
+
+/* ── Sync status strip ───────────────────────────────────────────── */
+.sync-status {
+    background: var(--glass-1);
+    border: 1px solid var(--border-dim);
+    border-radius: var(--radius);
+    padding: var(--space-sm) var(--space-md);
+    font-size: var(--fs-xs);
+    color: var(--text-muted);
+}
+
+.sync-status #last-sync {
+    margin-bottom: var(--space-sm);
+    color: var(--text-muted);
+}
+
+/* ── Main content ────────────────────────────────────────────────── */
+#content {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-xl) var(--space-2xl);
+    min-width: 0;
+}
+
+/* Module max-widths */
+.dashboard, .courses-module, .calculator-module,
+.sync-module, .settings-module { max-width: 1100px; }
+.sync-module, .settings-module { max-width: 720px; }
+
+/* ── Grid ────────────────────────────────────────────────────────── */
+.courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--space-md);
+    margin-top: var(--space-lg);
+}
+
+/* ── Mobile ──────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    #app { flex-direction: column; }
+
+    #sidebar {
+        width: 100%;
+        padding: var(--space-md);
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    #sidebar::before { height: 100px; }
+
+    #nav-menu {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
+    .nav-item {
+        flex: 1;
+        min-width: 80px;
+        text-align: center;
+        padding: var(--space-sm);
+        font-size: var(--fs-xs);
+    }
+
+    .nav-item::before { display: none; }
+
+    #content { padding: var(--space-md); }
+
+    .courses-grid { grid-template-columns: 1fr; }
 }

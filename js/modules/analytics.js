@@ -71,15 +71,15 @@ export function renderAnalytics(state, container) {
                 </div>
                 <div class="analytics-stat-card">
                     <span class="stat-label">Safe Skips Left</span>
-                    <span class="stat-value" style="color:var(--alert-success)">${totalSafeSkips}</span>
+                    <span class="stat-value" style="color:var(--color-very-safe)">${totalSafeSkips}</span>
                 </div>
                 <div class="analytics-stat-card">
                     <span class="stat-label">Units at Risk</span>
-                    <span class="stat-value" style="color:var(--alert-danger)">${unitsAtRisk}</span>
+                    <span class="stat-value" style="color:var(--color-critical)">${unitsAtRisk}</span>
                 </div>
                 <div class="analytics-stat-card">
                     <span class="stat-label">Need Recovery</span>
-                    <span class="stat-value" style="color:var(--alert-warning)">${belowThreshold.length}</span>
+                    <span class="stat-value" style="color:var(--color-warning)">${belowThreshold.length}</span>
                 </div>
             </div>
 
@@ -128,7 +128,7 @@ export function renderAnalytics(state, container) {
                     ${recoveryList.map(({ course, pct, needed }) => `
                         <div class="analytics-recovery-row">
                             <span><strong>${course.courseCode}</strong> — ${pct}%</span>
-                            <span style="color:var(--alert-danger)">Attend ${needed} consecutive class${needed !== 1 ? 'es' : ''}</span>
+                            <span style="color:var(--color-critical)">Attend ${needed} consecutive class${needed !== 1 ? 'es' : ''}</span>
                         </div>`).join('')}
                 </div>`}
             </div>

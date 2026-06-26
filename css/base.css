@@ -1,71 +1,103 @@
-/* Reset and base styles */
-* {
+*, *::before, *::after {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 body {
     font-family: var(--font-sans);
-    background: var(--bg-dark);
+    background-color: var(--bg-base);
     color: var(--text-primary);
     line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+    /* Subtle radial gradient behind everything */
+    background-image:
+        radial-gradient(ellipse 80% 50% at 20% 10%,
+            rgba(16, 185, 129, 0.04) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 90%,
+            rgba(59, 130, 246, 0.03) 0%, transparent 60%);
+    background-attachment: fixed;
 }
 
-h1, h2, h3, h4 {
-    margin-bottom: var(--space-md);
-    font-weight: 600;
-}
+/* Headings */
+h1 { font-size: var(--fs-2xl); font-weight: 700; letter-spacing: -0.03em; }
+h2 { font-size: var(--fs-xl);  font-weight: 600; letter-spacing: -0.02em; margin-bottom: var(--space-md); }
+h3 { font-size: var(--fs-lg);  font-weight: 600; letter-spacing: -0.01em; margin-bottom: var(--space-sm); }
+h4 { font-size: var(--fs-md);  font-weight: 600; }
 
-h1 {
-    font-size: var(--fs-xl);
-}
+h2, h3, h4 { color: var(--text-primary); }
 
-h2 {
-    font-size: var(--fs-lg);
-}
+p { margin-bottom: var(--space-sm); color: var(--text-secondary); }
+a { color: var(--primary); text-decoration: none; transition: var(--transition-fast); }
+a:hover { color: var(--primary-light); }
 
-h3 {
-    font-size: var(--fs-md);
-}
-
-p {
-    margin-bottom: var(--space-sm);
-}
-
-a {
-    color: var(--primary);
-    text-decoration: none;
-}
-
-a:hover {
-    color: var(--primary-light);
-}
-
+/* Form controls — glass style */
 input, select, textarea {
-    background: var(--bg-darker);
+    background: var(--glass-2);
+    backdrop-filter: var(--blur-sm);
+    -webkit-backdrop-filter: var(--blur-sm);
     border: 1px solid var(--border);
     color: var(--text-primary);
-    padding: var(--space-sm) var(--space-md);
+    padding: 10px 14px;
     border-radius: var(--radius);
     font-family: var(--font-sans);
-    font-size: 16px; /* Prevent iOS zoom on focus */
+    font-size: var(--fs-md);
     width: 100%;
-    min-height: 44px; /* Android touch target minimum */
+    min-height: 44px;
+    transition: var(--transition-fast);
+    outline: none;
+}
+
+input::placeholder, textarea::placeholder {
+    color: var(--text-muted);
 }
 
 input:focus, select:focus, textarea:focus {
-    outline: none;
-    border-color: var(--primary);
+    border-color: var(--border-accent);
+    background: var(--glass-3);
+    box-shadow: 0 0 0 3px var(--primary-glow-sm),
+                inset 0 1px 0 rgba(255,255,255,0.05);
 }
 
-/* Android-specific: prevent text selection on UI elements */
-button, .nav-item {
+select option {
+    background: #0a1628;
+    color: var(--text-primary);
+}
+
+label {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-md);
+}
+
+/* Prevent tap highlight on mobile */
+button, .nav-item, a {
     -webkit-tap-highlight-color: transparent;
     user-select: none;
 }
 
-/* Icon classes */
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--border-bright); }
+
+/* Icon containers */
 .icon-chart, .icon-moon, .icon-sun, .icon-book, .icon-clipboard,
 .icon-edit, .icon-camera, .icon-crystal, .icon-calendar, .icon-trend-up,
 .icon-trend-down, .icon-arrow-right, .icon-clock, .icon-trash, .icon-party,
@@ -76,17 +108,14 @@ button, .nav-item {
     vertical-align: middle;
 }
 
-.icon-chart svg, .icon-moon svg, .icon-sun svg, .icon-book svg, .icon-clipboard svg,
-.icon-edit svg, .icon-camera svg, .icon-crystal svg, .icon-calendar svg, .icon-trend-up svg,
-.icon-trend-down svg, .icon-arrow-right svg, .icon-clock svg, .icon-trash svg, .icon-party svg,
-.icon-check svg, .icon-x svg, .icon-progress svg {
-    width: 1em;
-    height: 1em;
+/* Spinner */
+.spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
 }
-
-label {
-    display: block;
-    margin-bottom: var(--space-xs);
-    font-size: var(--fs-sm);
-    color: var(--text-secondary);
-}
+@keyframes spin { to { transform: rotate(360deg); } }

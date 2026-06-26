@@ -1,10 +1,5 @@
-/**
- * Service Worker for PWA support
- * Caches assets for offline access
- */
-
-const CACHE_NAME = 'attendance-os-v1';
-const ASSETS_TO_CACHE = [
+const CACHE_NAME = 'attendance-os-v2';
+const ASSETS = [
     '/',
     '/index.html',
     '/css/tokens.css',
@@ -17,7 +12,6 @@ const ASSETS_TO_CACHE = [
     '/js/storage.js',
     '/js/utils.js',
     '/js/validator.js',
-    '/js/extension-bridge.js',
     '/js/toast.js',
     '/js/icons.js',
     '/js/data-initial.js',
@@ -29,52 +23,28 @@ const ASSETS_TO_CACHE = [
     '/manifest.json'
 ];
 
-self.addEventListener('install', (event) => {
-    event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(ASSETS_TO_CACHE);
-        })
+self.addEventListener('install', e =>
+    e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()))
+);
+
+self.addEventListener('fetch', e => {
+    // Network-first for API calls, cache-first for assets
+    if (e.request.url.includes('att2.lmu.edu.ng')) return;
+    e.respondWith(
+        caches.match(e.request).then(cached => cached || fetch(e.request).then(res => {
+            if (res.ok) {
+                const clone = res.clone();
+                caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
+            }
+            return res;
+        }))
     );
 });
 
-self.addEventListener('fetch', (event) => {
-    // Network-First or Stale-While-Revalidate for critical module dependencies
-    if (event.request.url.includes('/js/')) {
-        event.respondWith(
-            fetch(event.request)
-                .then((response) => {
-                    // Update cache with fresh version
-                    const clone = response.clone();
-                    caches.open(CACHE_NAME).then((cache) => {
-                        cache.put(event.request, clone);
-                    });
-                    return response;
-                })
-                .catch(() => {
-                    // Fallback to cache if network fails
-                    return caches.match(event.request);
-                })
-        );
-    } else {
-        // Cache-First for other assets
-        event.respondWith(
-            caches.match(event.request).then((response) => {
-                return response || fetch(event.request);
-            })
-        );
-    }
-});
-
-self.addEventListener('activate', (event) => {
-    event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return Promise.all(
-                cacheNames.map((cacheName) => {
-                    if (cacheName !== CACHE_NAME) {
-                        return caches.delete(cacheName);
-                    }
-                })
-            );
-        })
-    );
-});
+self.addEventListener('activate', e =>
+    e.waitUntil(
+        caches.keys().then(keys =>
+            Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+        ).then(() => self.clients.claim())
+    )
+);

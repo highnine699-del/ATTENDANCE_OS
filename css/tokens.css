@@ -1,52 +1,141 @@
 :root {
-    /* Colors: Emerald theme */
-    --primary: #10b981;
-    --primary-dark: #059669;
-    --primary-light: #6ee7b7;
-    --bg-dark: #0f172a;
-    --bg-darker: #050c1a;
-    --text-primary: #f1f5f9;
-    --text-secondary: #cbd5e1;
-    --border: #1e293b;
-    
-    /* Alert colors */
-    --alert-danger: #ef4444;
-    --alert-warning: #f59e0b;
-    --alert-success: #10b981;
-    --alert-info: #3b82f6;
-    
-    /* Spacing */
-    --space-xs: 0.25rem;
-    --space-sm: 0.5rem;
-    --space-md: 1rem;
-    --space-lg: 1.5rem;
-    --space-xl: 2rem;
-    
-    /* Typography */
-    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --font-mono: 'Courier New', monospace;
-    --fs-sm: 0.875rem;
-    --fs-md: 1rem;
-    --fs-lg: 1.125rem;
-    --fs-xl: 1.5rem;
-    
-    /* Borders & shadows */
-    --radius: 0.5rem;
-    --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
+    /* ── Base backgrounds ─────────────────────────────────── */
+    --bg-base:        #020817;   /* Deep space — page background */
+    --bg-deep:        #010610;   /* Even deeper — used behind glass */
+    --bg-surface:     #050f20;   /* Slightly lifted surface */
+    --bg-dark:        var(--bg-surface);   /* Fallback for legacy */
+    --bg-darker:      var(--bg-base);     /* Fallback for legacy */
 
-.theme-light {
+    /* ── Glass layers (the core of the design) ────────────── */
+    --glass-1:        rgba(255, 255, 255, 0.03);  /* Barely there */
+    --glass-2:        rgba(255, 255, 255, 0.055); /* Cards */
+    --glass-3:        rgba(255, 255, 255, 0.085); /* Elevated cards */
+    --glass-4:        rgba(255, 255, 255, 0.12);  /* Modals, focused */
+    --glass-hover:    rgba(255, 255, 255, 0.07);  /* Hover state */
+    --glass-active:   rgba(16, 185, 129, 0.08);   /* Active/selected */
+
+    /* ── Glass borders ────────────────────────────────────── */
+    --border-dim:     rgba(255, 255, 255, 0.05);
+    --border:         rgba(255, 255, 255, 0.09);
+    --border-bright:  rgba(255, 255, 255, 0.16);
+    --border-accent:  rgba(16, 185, 129, 0.35);
+
+    /* ── Text ─────────────────────────────────────────────── */
+    --text-primary:   #f0f6ff;
+    --text-secondary: #7a9bb5;
+    --text-muted:     #3d5a70;
+    --text-accent:    #10b981;
+
+    /* ── Brand accent — Emerald ───────────────────────────── */
     --primary:        #10b981;
     --primary-dark:   #059669;
-    --primary-light:  #059669;
-    --bg-dark:        #f1f5f9;
-    --bg-darker:      #ffffff;
-    --text-primary:   #0f172a;
+    --primary-light:  #34d399;
+    --primary-glow:   rgba(16, 185, 129, 0.25);
+    --primary-glow-sm: rgba(16, 185, 129, 0.12);
+
+    /* Legacy fallbacks for alert colors */
+    --alert-success:  var(--color-very-safe);
+    --alert-warning:  var(--color-warning);
+    --alert-danger:   var(--color-critical);
+
+    /* ── Status colors ────────────────────────────────────── */
+    --color-very-safe: #10b981;
+    --color-safe:      #34d399;
+    --color-warning:   #f59e0b;
+    --color-danger:    #f97316;
+    --color-critical:  #ef4444;
+    --color-no-data:   #3d5a70;
+
+    /* Status glows */
+    --glow-very-safe:  rgba(16, 185, 129, 0.20);
+    --glow-safe:       rgba(52, 211, 153, 0.18);
+    --glow-warning:    rgba(245, 158, 11, 0.20);
+    --glow-danger:     rgba(249, 115, 22, 0.22);
+    --glow-critical:   rgba(239, 68, 68, 0.25);
+
+    /* Status glass backgrounds */
+    --bg-very-safe:    rgba(16, 185, 129, 0.07);
+    --bg-safe:         rgba(52, 211, 153, 0.06);
+    --bg-warning:      rgba(245, 158, 11, 0.07);
+    --bg-danger:       rgba(249, 115, 22, 0.08);
+    --bg-critical:     rgba(239, 68, 68, 0.09);
+
+    /* ── Shadows ──────────────────────────────────────────── */
+    --shadow-sm:   0 2px 8px rgba(0, 0, 0, 0.4);
+    --shadow:      0 8px 32px rgba(0, 0, 0, 0.5),
+                   0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-lg:   0 20px 60px rgba(0, 0, 0, 0.6),
+                   0 8px 24px rgba(0, 0, 0, 0.4);
+    --shadow-glow: 0 0 30px var(--primary-glow),
+                   0 8px 32px rgba(0, 0, 0, 0.5);
+
+    /* ── Blur ─────────────────────────────────────────────── */
+    --blur-sm:  blur(8px)  saturate(160%);
+    --blur-md:  blur(16px) saturate(180%);
+    --blur-lg:  blur(24px) saturate(200%);
+
+    /* ── Border radius ────────────────────────────────────── */
+    --radius-sm:   8px;
+    --radius:      12px;
+    --radius-lg:   16px;
+    --radius-xl:   24px;
+    --radius-full: 9999px;
+
+    /* ── Spacing ──────────────────────────────────────────── */
+    --space-xs:  4px;
+    --space-sm:  8px;
+    --space-md:  16px;
+    --space-lg:  24px;
+    --space-xl:  32px;
+    --space-2xl: 48px;
+
+    /* ── Typography ───────────────────────────────────────── */
+    --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display',
+                 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+
+    --fs-xs:  0.7rem;
+    --fs-sm:  0.8rem;
+    --fs-md:  0.9rem;
+    --fs-lg:  1.05rem;
+    --fs-xl:  1.3rem;
+    --fs-2xl: 1.8rem;
+
+    /* ── Transitions ──────────────────────────────────────── */
+    --transition-fast:   all 0.15s ease;
+    --transition:        all 0.2s ease;
+    --transition-slow:   all 0.35s ease;
+
+    /* Keep old names as aliases so JS-injected styles still work */
+    --bg-dark:   var(--bg-surface);
+    --bg-darker: var(--bg-base);
+    --border-color: var(--border);
+    --alert-success: var(--color-very-safe);
+    --alert-warning: var(--color-warning);
+    --alert-danger:  var(--color-critical);
+    --alert-info:    #3b82f6;
+    --radius-val:    var(--radius);
+    --shadow-val:    var(--shadow);
+}
+
+/* ── Light theme (minimal — dark mode is default) ─────────────── */
+.theme-light {
+    --bg-base:        #f0f4f8;
+    --bg-deep:        #e2e8f0;
+    --bg-surface:     #f8fafc;
+    --glass-1:        rgba(0, 0, 0, 0.02);
+    --glass-2:        rgba(0, 0, 0, 0.04);
+    --glass-3:        rgba(0, 0, 0, 0.06);
+    --glass-4:        rgba(0, 0, 0, 0.09);
+    --glass-hover:    rgba(0, 0, 0, 0.05);
+    --border-dim:     rgba(0, 0, 0, 0.05);
+    --border:         rgba(0, 0, 0, 0.09);
+    --border-bright:  rgba(0, 0, 0, 0.15);
+    --text-primary:   #0d1b2e;
     --text-secondary: #475569;
-    --border:         #cbd5e1;
-    --alert-danger:   #ef4444;
-    --alert-warning:  #f59e0b;
-    --alert-success:  #10b981;
-    --alert-info:     #3b82f6;
-    --shadow:         0 4px 12px rgba(0, 0, 0, 0.08);
+    --text-muted:     #94a3b8;
+    --shadow:         0 4px 16px rgba(0, 0, 0, 0.1),
+                      0 1px 4px rgba(0, 0, 0, 0.07);
+    --bg-dark:        var(--bg-surface);
+    --bg-darker:      var(--bg-base);
 }

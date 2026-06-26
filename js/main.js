@@ -99,7 +99,6 @@ document.getElementById('theme-toggle')?.addEventListener('click', () => {
 
 function applyTheme(theme) {
     document.documentElement.classList.toggle('theme-light', theme === 'light');
-    document.documentElement.classList.toggle('theme-dark',  theme !== 'light');
     const moonIcon = document.querySelector('.icon-moon');
     if (moonIcon) moonIcon.innerHTML = theme === 'dark' ? icons.moon : icons.sun;
 }

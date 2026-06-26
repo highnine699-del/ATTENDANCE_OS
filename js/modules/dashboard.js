@@ -90,15 +90,15 @@ export function renderDashboard(state, container) {
                 </div>
                 <div class="health-grid">
                     <div class="health-stat">
-                        <span class="stat-num" style="color:var(--alert-success)">${stats.safe}</span>
+                        <span class="stat-num" style="color:var(--color-very-safe)">${stats.safe}</span>
                         <span class="stat-label">Safe</span>
                     </div>
                     <div class="health-stat">
-                        <span class="stat-num" style="color:var(--alert-warning)">${stats.warning}</span>
+                        <span class="stat-num" style="color:var(--color-warning)">${stats.warning}</span>
                         <span class="stat-label">Warning</span>
                     </div>
                     <div class="health-stat">
-                        <span class="stat-num" style="color:var(--alert-danger)">${stats.danger}</span>
+                        <span class="stat-num" style="color:var(--color-danger)">${stats.danger}</span>
                         <span class="stat-label">Danger</span>
                     </div>
                     <div class="health-stat">
@@ -121,7 +121,7 @@ export function renderDashboard(state, container) {
                 ${semInfo.examDate ? `<p class="exam-countdown">${icons.clock} Exams: ${new Date(semInfo.examDate).toLocaleDateString()}</p>` : ''}
             </div>` : ''}
 
-            <h3 style="margin-top:var(--space-xl)">${icons.book} All Courses ${allSafe ? '— <span style="color:var(--alert-success)">All Safe! 🎉</span>' : ''}</h3>
+            <h3 style="margin-top:var(--space-xl)">${icons.book} All Courses ${allSafe ? '— <span style="color:var(--color-very-safe)">All Safe! 🎉</span>' : ''}</h3>
             <div class="dashboard-course-list">
                 ${sortedCourses.map(c => {
                     const cstats = calcCourseStats(c, threshold);
