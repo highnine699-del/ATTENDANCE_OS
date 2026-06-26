@@ -1,35 +1,36 @@
-import { StateManager }    from './state.js';
+import { StateManager } from './state.js';
 import { renderDashboard } from './modules/dashboard.js';
-import { renderCourses }   from './modules/courses.js';
-import { renderCalculator }from './modules/calculator.js';
-import { renderSync }      from './modules/sync.js';
-import { renderSettings }  from './modules/settings.js';
+import { renderCourses } from './modules/courses.js';
+import { renderCalculator } from './modules/calculator.js';
+import { renderSync } from './modules/sync.js';
+import { renderSettings } from './modules/settings.js';
 import { renderAnalytics } from './modules/analytics.js';
 import { showSuccess, showError, showInfo } from './toast.js';
-import { icons }           from './icons.js';
+import { icons } from './icons.js';
 
 // ── PWA: register service worker ─────────────────────────────────────────
 // FIX: sw.js existed but was never registered — PWA was completely non-functional
+// GitHub Pages deploys to subpath ATTENDANCE_TRACKER/, so use relative path
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').catch(err => {
+        navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(err => {
             console.warn('SW registration failed:', err);
         });
     });
 }
 
 // ── Bootstrap ─────────────────────────────────────────────────────────────
-const state       = new StateManager();
+const state = new StateManager();
 const contentArea = document.getElementById('content');
-const navItems    = document.querySelectorAll('.nav-item');
+const navItems = document.querySelectorAll('.nav-item');
 
 const modules = {
-    dashboard:  renderDashboard,
-    courses:    renderCourses,
+    dashboard: renderDashboard,
+    courses: renderCourses,
     calculator: renderCalculator,
-    analytics:  renderAnalytics,
-    sync:       renderSync,
-    settings:   renderSettings
+    analytics: renderAnalytics,
+    sync: renderSync,
+    settings: renderSettings
 };
 
 function switchModule(moduleName) {
@@ -58,7 +59,7 @@ state.init().then(() => {
         loadingScreen.style.transition = 'opacity 0.3s ease';
         setTimeout(() => loadingScreen.remove(), 300);
     }
-    
+
     // Show app
     const app = document.getElementById('app');
     if (app) app.style.display = 'flex';
@@ -66,9 +67,9 @@ state.init().then(() => {
     applyTheme(state.getSettings().theme);
 
     const chartIcon = document.querySelector('.icon-chart');
-    const moonIcon  = document.querySelector('.icon-moon');
+    const moonIcon = document.querySelector('.icon-moon');
     if (chartIcon) chartIcon.innerHTML = icons.chart;
-    if (moonIcon)  moonIcon.innerHTML  = icons.moon;
+    if (moonIcon) moonIcon.innerHTML = icons.moon;
 
     updateUserDisplay();
     updateLastSyncDisplay();
@@ -136,12 +137,12 @@ window.applyTheme = applyTheme;
 // ── Helpers ───────────────────────────────────────────────────────────────
 window.updateUserDisplay = function () {
     const name = state.getSettings().userName;
-    const el   = document.getElementById('user-display');
+    const el = document.getElementById('user-display');
     if (el) el.textContent = name ? `👤 ${name}` : '👤 Guest (set name in Settings)';
 };
 
 function updateLastSyncDisplay() {
-    const el   = document.getElementById('last-sync');
+    const el = document.getElementById('last-sync');
     const last = state.getLastSync(); // FIX: was state.state.lastSync
     if (el) el.textContent = last ? `Last sync: ${new Date(last).toLocaleString()}` : 'Last sync: never';
 }
