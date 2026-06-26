@@ -1,8 +1,48 @@
 /* ── App shell ───────────────────────────────────────────────────── */
 #app {
-    display: flex;
+    display: none;
     height: 100vh;
     overflow: hidden;
+}
+
+.loading-screen {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-base);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.loading-screen .loading-text {
+    text-align: center;
+}
+
+.loading-screen .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border-width: 4px;
+}
+
+.loading-screen .loading-text p {
+    margin-top: 1rem;
+    color: var(--text-secondary);
+}
+
+.loading-screen .loading-text {
+    text-align: center;
+}
+
+.loading-screen .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border-width: 4px;
+}
+
+.loading-screen .loading-text p {
+    margin-top: 1rem;
+    color: var(--text-secondary);
 }
 
 /* ── Sidebar ─────────────────────────────────────────────────────── */
@@ -15,12 +55,12 @@
     gap: var(--space-md);
     /* Glass panel */
     background: var(--glass-2);
-    backdrop-filter: var(--blur-md);
     -webkit-backdrop-filter: var(--blur-md);
+    backdrop-filter: var(--blur-md);
     border-right: 1px solid var(--border);
     /* Subtle inner highlight at top */
     box-shadow: inset -1px 0 0 var(--border-dim),
-                1px 0 30px rgba(0,0,0,0.3);
+        1px 0 30px rgba(0, 0, 0, 0.3);
     overflow-y: auto;
     position: relative;
     z-index: 10;
@@ -30,11 +70,13 @@
 #sidebar::before {
     content: '';
     position: absolute;
-    top: 0; left: 0; right: 0;
+    top: 0;
+    left: 0;
+    right: 0;
     height: 200px;
     background: linear-gradient(180deg,
-        rgba(16,185,129,0.05) 0%,
-        transparent 100%);
+            rgba(16, 185, 129, 0.05) 0%,
+            transparent 100%);
     pointer-events: none;
 }
 
@@ -101,7 +143,9 @@
 .nav-item::before {
     content: '';
     position: absolute;
-    left: 0; top: 0; bottom: 0;
+    left: 0;
+    top: 0;
+    bottom: 0;
     width: 2px;
     background: var(--primary);
     border-radius: 0 2px 2px 0;
@@ -120,8 +164,8 @@
     border-color: var(--border-accent);
     color: var(--primary);
     font-weight: 600;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05),
-                0 0 20px var(--primary-glow-sm);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05),
+        0 0 20px var(--primary-glow-sm);
 }
 
 .nav-item.active::before {
@@ -134,9 +178,11 @@
     border-top: 1px solid var(--border-dim);
     display: flex;
     justify-content: center;
+    gap: var(--space-sm);
 }
 
-.theme-toggle {
+.theme-toggle,
+.install-extension-btn {
     background: var(--glass-2);
     border: 1px solid var(--border);
     color: var(--text-secondary);
@@ -150,7 +196,18 @@
     transition: var(--transition);
     font-size: 0;
 }
-.theme-toggle:hover {
+
+.install-extension-btn {
+    width: auto;
+    min-width: 140px;
+    padding: 0 var(--space-sm);
+    font-size: var(--fs-sm);
+    border-radius: var(--radius-lg);
+    font-weight: 700;
+}
+
+.theme-toggle:hover,
+.install-extension-btn:hover {
     background: var(--glass-3);
     border-color: var(--border-bright);
     color: var(--text-primary);
@@ -181,9 +238,19 @@
 }
 
 /* Module max-widths */
-.dashboard, .courses-module, .calculator-module,
-.sync-module, .settings-module, .analytics-module { max-width: 1100px; }
-.sync-module, .settings-module { max-width: 720px; }
+.dashboard,
+.courses-module,
+.calculator-module,
+.sync-module,
+.settings-module,
+.analytics-module {
+    max-width: 1100px;
+}
+
+.sync-module,
+.settings-module {
+    max-width: 720px;
+}
 
 /* ── Grid ────────────────────────────────────────────────────────── */
 .courses-grid {
@@ -195,17 +262,21 @@
 
 /* ── Mobile ──────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-    #app { flex-direction: column; }
+    #app {
+        flex-direction: column;
+    }
 
     #sidebar {
         width: 100%;
         padding: var(--space-md);
         border-right: none;
         border-bottom: 1px solid var(--border);
-        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     }
 
-    #sidebar::before { height: 100px; }
+    #sidebar::before {
+        height: 100px;
+    }
 
     #nav-menu {
         flex-direction: row;
@@ -221,15 +292,25 @@
         font-size: var(--fs-xs);
     }
 
-    .nav-item::before { display: none; }
+    .nav-item::before {
+        display: none;
+    }
 
-    #content { padding: var(--space-md); }
+    #content {
+        padding: var(--space-md);
+    }
 
-    .courses-grid { grid-template-columns: 1fr; }
-    
-    .analytics-stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .courses-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .analytics-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 @media (max-width: 480px) {
-    .analytics-stats-grid { grid-template-columns: 1fr; }
+    .analytics-stats-grid {
+        grid-template-columns: 1fr;
+    }
 }

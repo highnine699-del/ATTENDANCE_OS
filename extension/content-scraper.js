@@ -71,13 +71,18 @@ function scrapeAttendanceTable() {
 }
 
 function tryAutoScrape() {
-    const table = document.querySelector('table tbody tr');
-    if (!table) return;
+    const tbody = document.querySelector('table tbody');
+    if (!tbody || tbody.querySelectorAll('tr').length === 0) return;
 
     const data = scrapeAttendanceTable();
-    if (data.courses.length === 0) return;
+    if (!data || data.courses.length === 0) return;
 
     chrome.storage.local.set({ attendanceData: data }, () => {
+        if (chrome.runtime.lastError) {
+            console.error('Failed to save attendance data:', chrome.runtime.lastError);
+            return;
+        }
+
         const atRisk = data.courses.filter(c => c.percentage < 75).length;
         chrome.runtime.sendMessage({
             action: 'updateBadge',

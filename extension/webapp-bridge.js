@@ -3,14 +3,31 @@
  * Provides a bridge for the web app to communicate with the extension
  */
 
-const targetOrigin = window.location.origin || '*';
+const targetOrigin = (() => {
+    const origin = window.location.origin;
+    if (!origin) {
+        console.error('Failed to determine window.location.origin. Bridge disabled.');
+        throw new Error('Unsafe context for Attendance OS bridge');
+    }
 
-// Listen for messages from the web app (via window.postMessage)
+    const isSecure = origin.startsWith('https://') ||
+        origin.startsWith('http://localhost') ||
+        origin.startsWith('http://127.0.0.1');
+
+    if (!isSecure) {
+        console.error(`Insecure origin detected: ${origin}. Bridge disabled.`);
+        throw new Error('Bridge only works over HTTPS or localhost');
+    }
+
+    return origin;
+})();
+
 window.addEventListener('message', (event) => {
-    if (event.origin !== window.location.origin) return;
+    if (event.origin !== targetOrigin) {
+        console.warn(`Rejected message from untrusted origin: ${event.origin}`);
+        return;
+    }
     if (event.source !== window || !event.data || typeof event.data.type !== 'string') return;
-
-    const replyOrigin = event.origin || targetOrigin;
 
     if (event.data.type === 'ATTENDANCE_OS_SYNC') {
         chrome.runtime.sendMessage({ action: 'getAttendanceData' }, (response) => {
@@ -22,7 +39,7 @@ window.addEventListener('message', (event) => {
                 type: 'ATTENDANCE_OS_SYNC_RESPONSE',
                 requestId: event.data.requestId,
                 data: response
-            }, replyOrigin);
+            }, targetOrigin);
         });
     }
 
@@ -30,11 +47,10 @@ window.addEventListener('message', (event) => {
         window.postMessage({
             type: 'ATTENDANCE_OS_BRIDGE_READY',
             requestId: event.data.requestId
-        }, replyOrigin);
+        }, targetOrigin);
     }
 });
 
-// Notify the web app that the bridge is ready
 window.postMessage({
     type: 'ATTENDANCE_OS_BRIDGE_READY'
 }, targetOrigin);

@@ -49,7 +49,12 @@ export function renderCalculator(state, container) {
         const safeSkips = calculateSafeSkips(attended, total, threshold);
         const lectNeeded = calcLecturesNeeded(attended, total, threshold);
         // Estimate lectures per week for this course
-        const lectPerWeek = total > 0 && currentWeek > 0 ? Math.max(1, Math.round((total / Math.min(currentWeek, totalWeeks)) * 10) / 10) : 1;
+        let lectPerWeek = 1;
+        if (total > 0 && currentWeek > 0 && totalWeeks > 0) {
+            const effectiveWeeks = Math.max(1, Math.min(currentWeek, totalWeeks));
+            const calculated = Math.round((total / effectiveWeeks) * 10) / 10;
+            lectPerWeek = Math.max(1, calculated);
+        }
         const recovery = calculateRecoveryPlan(attended, total, weeksLeft, threshold, lectPerWeek);
 
         return `
@@ -147,7 +152,11 @@ export function renderCalculator(state, container) {
         if (scenario === 'attend') { newAttended += number; newTotal += number; }
         else if (scenario === 'skip') { newTotal += number; }
         else if (scenario === 'perfect') {
-            const lectPerWeek = newTotal > 0 && currentWeek > 0 ? Math.max(1, Math.round(newTotal / Math.min(currentWeek, totalWeeks))) : 1;
+            let lectPerWeek = 1;
+            if (newTotal > 0 && currentWeek > 0 && totalWeeks > 0) {
+                const effectiveWeeks = Math.max(1, Math.min(currentWeek, totalWeeks));
+                lectPerWeek = Math.max(1, Math.round((newTotal / effectiveWeeks) * 10) / 10);
+            }
             const remaining = weeksLeft * lectPerWeek;
             newAttended += remaining;
             newTotal += remaining;

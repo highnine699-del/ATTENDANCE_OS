@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description"
+        content="Track your LMU attendance, calculate safe skips, and monitor your semester progress with Attendance OS.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Attendance OS — LMU</title>
     <link rel="stylesheet" href="css/tokens.css">
     <link rel="stylesheet" href="css/base.css">
@@ -10,18 +13,20 @@
     <link rel="stylesheet" href="css/layout.css">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#10b981">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
+
 <body>
-    <div id="loading-screen" style="position: fixed; inset: 0; background: var(--bg-base); display: flex; align-items: center; justify-content: center; z-index: 9999;">
-        <div style="text-align: center;">
-            <div class="spinner" style="width: 40px; height: 40px; border-width: 4px;"></div>
-            <p style="margin-top: 1rem; color: var(--text-secondary);">Loading Attendance OS...</p>
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-text">
+            <div class="spinner loading-spinner"></div>
+            <p>Loading Attendance OS...</p>
         </div>
     </div>
-    <div id="app" style="display: none;">
+    <div id="app">
         <aside id="sidebar">
             <header>
                 <h1><span class="icon-chart"></span> Attendance OS</h1>
@@ -40,6 +45,10 @@
                 <button id="theme-toggle" class="theme-toggle" title="Toggle theme">
                     <span class="icon-moon"></span>
                 </button>
+                <button id="install-extension-btn" class="install-extension-btn"
+                    title="Install the Chrome extension for auto-sync">
+                    📦 Install Extension
+                </button>
             </div>
             <div id="sync-status" class="sync-status">
                 <p id="last-sync">Last sync: never</p>
@@ -53,4 +62,5 @@
 
     <script type="module" src="js/main.js"></script>
 </body>
+
 </html>

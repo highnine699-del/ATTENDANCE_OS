@@ -10,19 +10,33 @@ const APP_URLS = [
     'http://127.0.0.1:8080'
 ];
 
+function buildTabQueryPattern(url) {
+    const normalized = url.endsWith('/') ? url : `${url}/`;
+    return `${normalized}*`;
+}
+
 function calculatePercentage(attended, total) {
     if (!total || total <= 0) return 0;
     return Math.round((attended / total) * 1000) / 10;
 }
 
 function calculateWeightedAttendance(courses) {
-    const active = (courses || []).filter(c => c.totalClasses > 0);
+    const active = (courses || []).filter(c => c && c.totalClasses > 0);
     if (!active.length) return 0;
-    const totalWeight = active.reduce((s, c) => s + Math.max(c.units || 0, 1), 0);
+
+    const totalWeight = active.reduce((s, c) => {
+        const units = Number.isFinite(c?.units) ? Math.max(c.units, 1) : 1;
+        return s + units;
+    }, 0);
+
+    if (totalWeight <= 0) return 0;
+
     const weightedSum = active.reduce((s, c) => {
         const pct = calculatePercentage(c.attended, c.totalClasses);
-        return s + pct * Math.max(c.units || 0, 1);
+        const units = Number.isFinite(c?.units) ? Math.max(c.units, 1) : 1;
+        return s + pct * units;
     }, 0);
+
     return Math.round((weightedSum / totalWeight) * 10) / 10;
 }
 
@@ -98,8 +112,8 @@ function renderStats(data) {
         return;
     }
 
-    const activeCourses = courses.filter(c => c.totalClasses > 0);
-    const weighted = calculateWeightedAttendance(activeCourses.length ? activeCourses : courses);
+    const activeCourses = (courses || []).filter(c => c && c.totalClasses > 0);
+    const weighted = calculateWeightedAttendance(activeCourses.length > 0 ? activeCourses : courses || []);
     const hasData = activeCourses.length > 0;
     overallEl.textContent = hasData ? `${weighted}%` : '—';
     overallEl.style.color = hasData
@@ -125,7 +139,7 @@ function renderStats(data) {
 
 async function openApp() {
     for (const url of APP_URLS) {
-        const pattern = url.includes('localhost') ? `${url}/*` : url + '*';
+        const pattern = buildTabQueryPattern(url);
         const tabs = await chromeTabsQuery({ url: pattern });
         if (tabs.length > 0) {
             await chromeTabsUpdate(tabs[0].id, { active: true });

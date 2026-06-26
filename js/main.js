@@ -114,6 +114,14 @@ async function triggerQuickSync(showToast = true) {
 
 document.getElementById('quick-sync')?.addEventListener('click', () => triggerQuickSync(true));
 
+document.getElementById('install-extension-btn')?.addEventListener('click', () => {
+    installExtensionFromPage();
+});
+
+window.addEventListener('open-extension-install', () => {
+    installExtensionFromPage();
+});
+
 // ── Theme ──────────────────────────────────────────────────────────────────
 // FIX: old applyTheme() patched individual CSS vars — fragile and incomplete.
 // Now uses CSS class on :root which covers all variables defined in tokens.css.
@@ -133,6 +141,41 @@ function applyTheme(theme) {
 }
 
 window.applyTheme = applyTheme;
+
+function installExtensionFromPage() {
+    const extensionPath = 'https://github.com/highnine699/attendance-os/tree/main/extension';
+    const installMessage = `To install the Chrome extension:\n\n` +
+        `1. Open Chrome and go to chrome://extensions/\n` +
+        `2. Enable Developer mode\n` +
+        `3. Click "Load unpacked"\n` +
+        `4. Select the extension folder from the cloned repo\n\n` +
+        `You can download or clone the extension from:\n${extensionPath}`;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(extensionPath).then(() => {
+            showSuccess('Extension install instructions copied to clipboard');
+        }).catch(() => {
+            showInfo('Unable to copy to clipboard, please use the link displayed');
+        });
+    }
+
+    const dialog = document.createElement('div');
+    dialog.className = 'install-extension-modal';
+    dialog.innerHTML = `
+        <div class="modal-dialog">
+            <h2>Install Chrome Extension</h2>
+            <p>Download or clone the repo, then load the <code>extension/</code> folder in Chrome.</p>
+            <p><strong>Repo:</strong> <a href="${extensionPath}" target="_blank" rel="noreferrer">${extensionPath}</a></p>
+            <pre>${installMessage}</pre>
+            <button id="close-install-dialog" class="btn-primary">Close</button>
+        </div>
+    `;
+    document.body.appendChild(dialog);
+
+    document.getElementById('close-install-dialog')?.addEventListener('click', () => {
+        dialog.remove();
+    });
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 window.updateUserDisplay = function () {

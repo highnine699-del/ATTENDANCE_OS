@@ -153,6 +153,17 @@ export function clearAllToasts() {
     }
 }
 
+export function resetToastContainer() {
+    if (toastContainer) {
+        toastContainer.remove();
+        toastContainer = null;
+    }
+}
+
+window.addEventListener('beforeunload', () => {
+    resetToastContainer();
+});
+
 /**
  * Add CSS animations (should be in global CSS, but fallback here)
  */

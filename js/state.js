@@ -14,6 +14,9 @@ export class StateManager {
         };
         this.storageKey = null;
         this.listeners = [];
+        this.isSyncing = false;
+        this.syncInProgress = null;
+        this.syncAbortController = null;
     }
 
     getUserId() {
@@ -126,74 +129,132 @@ export class StateManager {
     }
 
     // ── Sync ──────────────────────────────────────────────────────────────
+    getSyncStatus() {
+        return {
+            isSyncing: this.isSyncing,
+            message: this.isSyncing ? 'Sync in progress...' : 'Ready'
+        };
+    }
+
     async syncFromExtension() {
+        if (this.isSyncing) {
+            if (this.syncInProgress) {
+                return this.syncInProgress;
+            }
+            return { success: false, error: 'Sync already in progress. Please wait...' };
+        }
+
+        this.isSyncing = true;
+        this.syncAbortController = new AbortController();
+
         try {
-            const pingId = `attendance_sync_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-            window.postMessage({ type: 'ATTENDANCE_OS_BRIDGE_PING', requestId: pingId }, '*');
-
-            const bridgeReady = await new Promise(resolve => {
-                let h;
-                const t = setTimeout(() => {
-                    window.removeEventListener('message', h);
-                    resolve(false);
-                }, 2000);
-                h = e => {
-                    if (e.source !== window) return;
-                    if (e.data?.type === 'ATTENDANCE_OS_BRIDGE_READY' && e.data.requestId === pingId) {
-                        clearTimeout(t);
-                        window.removeEventListener('message', h);
-                        resolve(true);
-                    }
-                };
-                window.addEventListener('message', h);
-            });
-
-            if (!bridgeReady) {
-                return { success: false, error: 'Extension bridge not ready. Reload the page and ensure the extension is installed.' };
-            }
-
-            const syncRequestId = `attendance_sync_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-            const data = await new Promise((resolve, reject) => {
-                let h;
-                const t = setTimeout(() => {
-                    window.removeEventListener('message', h);
-                    reject(new Error('Extension not responding. Reload page with extension installed.'));
-                }, 5000);
-                h = e => {
-                    if (e.source !== window) return;
-                    if (e.data?.type === 'ATTENDANCE_OS_SYNC_RESPONSE' && e.data.requestId === syncRequestId) {
-                        clearTimeout(t);
-                        window.removeEventListener('message', h);
-                        resolve(e.data.data);
-                    }
-                };
-                window.addEventListener('message', h);
-                window.postMessage({ type: 'ATTENDANCE_OS_SYNC', requestId: syncRequestId }, '*');
-            });
-
-            if (data && Array.isArray(data.courses)) {
-                let updated = 0;
-                data.courses.forEach(ec => {
-                    if (this.getCourse(ec.courseCode)) {
-                        this.updateCourse(ec.courseCode, {
-                            attended: ec.attended, suppressed: ec.suppressed,
-                            percentage: ec.percentage, totalClasses: ec.totalClasses,
-                            syncSource: 'extension'
-                        }, { notify: false });
-                        updated++;
-                    }
-                });
-                if (data.semesterInfo) {
-                    this.updateSemesterInfo(data.semesterInfo);
-                }
-                this.persist();
-                this.notify();
-                this.recordSync('extension', updated);
-                return { success: true, coursesUpdated: updated };
-            }
-            return { success: false, error: 'No course data received from extension.' };
+            this.syncInProgress = this._performSync(this.syncAbortController.signal);
+            const result = await this.syncInProgress;
+            return result;
         } catch (err) {
+            if (err.name === 'AbortError') {
+                return { success: false, error: 'Sync was cancelled' };
+            }
             return { success: false, error: err.message };
+        } finally {
+            this.isSyncing = false;
+            this.syncInProgress = null;
+            this.syncAbortController = null;
+        }
+    }
+
+    async _performSync(signal) {
+        const pingId = `attendance_sync_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+        window.postMessage({ type: 'ATTENDANCE_OS_BRIDGE_PING', requestId: pingId }, '*');
+
+        const bridgeReady = await new Promise((resolve, reject) => {
+            if (signal.aborted) {
+                reject(new DOMException('Aborted', 'AbortError'));
+                return;
+            }
+
+            let h;
+            const t = setTimeout(() => {
+                window.removeEventListener('message', h);
+                reject(new Error('Extension bridge not ready. Reload the page and ensure the extension is installed.'));
+            }, 2000);
+            h = e => {
+                if (e.source !== window) return;
+                if (e.data?.type === 'ATTENDANCE_OS_BRIDGE_READY' && e.data.requestId === pingId) {
+                    clearTimeout(t);
+                    window.removeEventListener('message', h);
+                    resolve(true);
+                }
+            };
+            const abortListener = () => {
+                clearTimeout(t);
+                window.removeEventListener('message', h);
+                reject(new DOMException('Aborted', 'AbortError'));
+            };
+            signal.addEventListener('abort', abortListener);
+            window.addEventListener('message', h);
+        });
+
+        if (!bridgeReady) {
+            throw new Error('Extension bridge not ready. Reload the page and ensure the extension is installed.');
+        }
+
+        const syncRequestId = `attendance_sync_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+        const data = await new Promise((resolve, reject) => {
+            if (signal.aborted) {
+                reject(new DOMException('Aborted', 'AbortError'));
+                return;
+            }
+
+            let h;
+            const t = setTimeout(() => {
+                window.removeEventListener('message', h);
+                reject(new Error('Extension not responding. Reload page with extension installed.'));
+            }, 5000);
+            h = e => {
+                if (e.source !== window) return;
+                if (e.data?.type === 'ATTENDANCE_OS_SYNC_RESPONSE' && e.data.requestId === syncRequestId) {
+                    clearTimeout(t);
+                    window.removeEventListener('message', h);
+                    resolve(e.data.data);
+                }
+            };
+            const abortListener = () => {
+                clearTimeout(t);
+                window.removeEventListener('message', h);
+                reject(new DOMException('Aborted', 'AbortError'));
+            };
+            signal.addEventListener('abort', abortListener);
+            window.addEventListener('message', h);
+            window.postMessage({ type: 'ATTENDANCE_OS_SYNC', requestId: syncRequestId }, '*');
+        });
+
+        if (data && Array.isArray(data.courses)) {
+            let updated = 0;
+            data.courses.forEach(ec => {
+                if (this.getCourse(ec.courseCode)) {
+                    this.updateCourse(ec.courseCode, {
+                        attended: ec.attended, suppressed: ec.suppressed,
+                        percentage: ec.percentage, totalClasses: ec.totalClasses,
+                        syncSource: 'extension'
+                    }, { notify: false });
+                    updated++;
+                }
+            });
+            if (data.semesterInfo) {
+                this.updateSemesterInfo(data.semesterInfo);
+            }
+            this.persist();
+            this.notify();
+            this.recordSync('extension', updated);
+            return { success: true, coursesUpdated: updated };
+        }
+        throw new Error('No course data received from extension.');
+    }
+
+    cancelSync() {
+        if (this.syncAbortController) {
+            this.syncAbortController.abort();
         }
     }
 

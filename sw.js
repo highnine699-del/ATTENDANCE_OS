@@ -1,4 +1,5 @@
-const CACHE_NAME = 'attendance-os-v2';
+const CACHE_VERSION = '2.0.2';
+const CACHE_NAME = `attendance-os-${CACHE_VERSION}`;
 const ASSETS = [
     '/',
     '/index.html',

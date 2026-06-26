@@ -23,9 +23,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             if (chrome.runtime.lastError) {
                 console.error('Storage get error:', chrome.runtime.lastError);
                 sendResponse({ courses: [] });
-            } else {
-                sendResponse(result.attendanceData || { courses: [] });
+                return;
             }
+            sendResponse(result.attendanceData || { courses: [] });
         });
         return true;
     }
@@ -35,10 +35,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             if (chrome.runtime.lastError) {
                 console.error('Storage set error:', chrome.runtime.lastError);
                 sendResponse({ success: false, error: chrome.runtime.lastError.message });
-            } else {
-                updateBadgeFromData(request.data);
-                sendResponse({ success: true });
+                return;
             }
+            updateBadgeFromData(request.data);
+            sendResponse({ success: true });
         });
         return true;
     }

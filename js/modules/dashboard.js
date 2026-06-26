@@ -41,12 +41,20 @@ export function renderDashboard(state, container) {
     if (courses.length === 0) {
         container.innerHTML = `
             <div class="dashboard">
-                <h2>Dashboard</h2>
+                <div class="dashboard-hero">
+                    <div>
+                        <p class="hero-eyebrow">Attendance pulse</p>
+                        <h2>Dashboard</h2>
+                        <p class="hero-copy">Track your current standing and stay ahead of the semester.</p>
+                    </div>
+                    <div class="hero-pill">${lastSync ? formatDateTime(lastSync) : 'Not synced yet'}</div>
+                </div>
                 <div class="empty-state">
                     <div class="empty-icon">${icons.book}</div>
                     <h3>No Courses Yet</h3>
                     <p>Start by syncing from the LMU portal or add courses manually.</p>
                     <button onclick="document.querySelector('[data-module=\"sync\"]').click()" class="btn-primary">Sync Now</button>
+                    <button id="dashboard-install-extension" class="btn-secondary">Install Extension</button>
                 </div>
             </div>`;
         return;
@@ -63,12 +71,20 @@ export function renderDashboard(state, container) {
 
     container.innerHTML = `
         <div class="dashboard">
-            <h2>Dashboard</h2>
+            <div class="dashboard-hero">
+                <div>
+                    <p class="hero-eyebrow">Attendance pulse</p>
+                    <h2>Dashboard</h2>
+                    <p class="hero-copy">A quick view of your current attendance health and the courses that need attention.</p>
+                </div>
+                <div class="hero-pill">${lastSync ? formatDateTime(lastSync) : 'Not synced yet'}</div>
+            </div>
 
             ${coursesWithData.length > 0 ? `
             <div class="skip-today-widget">
                 <h3>Can I skip today?</h3>
                 <div class="skip-today-controls">
+                    <label for="skip-course-select" class="sr-only">Choose a course to check attendance</label>
                     <select id="skip-course-select">
                         <option value="">— Select a course —</option>
                         ${coursesWithData.map(c => `<option value="${c.courseCode}">${c.courseCode} — ${c.courseTitle}</option>`).join('')}
@@ -168,6 +184,13 @@ export function renderDashboard(state, container) {
 
             <p class="sync-timestamp">Last synced: ${lastSync ? formatDateTime(lastSync) : 'Never'}</p>
         </div>`;
+
+    const installExtensionButton = document.getElementById('dashboard-install-extension');
+    if (installExtensionButton) {
+        installExtensionButton.addEventListener('click', () => {
+            window.dispatchEvent(new CustomEvent('open-extension-install'));
+        });
+    }
 
     const skipSelect = document.getElementById('skip-course-select');
     const skipResult = document.getElementById('skip-today-result');
