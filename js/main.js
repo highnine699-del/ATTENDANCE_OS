@@ -143,17 +143,19 @@ function applyTheme(theme) {
 window.applyTheme = applyTheme;
 
 function installExtensionFromPage() {
-    const extensionPath = 'https://github.com/highnine699/attendance-os/tree/main/extension';
+    const repoDownloadUrl = 'https://github.com/highnine699/attendance-os/archive/refs/heads/main.zip';
     const installMessage = `To install the Chrome extension:\n\n` +
-        `1. Open Chrome and go to chrome://extensions/\n` +
-        `2. Enable Developer mode\n` +
-        `3. Click "Load unpacked"\n` +
-        `4. Select the extension folder from the cloned repo\n\n` +
-        `You can download or clone the extension from:\n${extensionPath}`;
+        `1. Download the extension package below\n` +
+        `2. Extract the ZIP file\n` +
+        `3. Open Chrome and go to chrome://extensions/\n` +
+        `4. Enable Developer mode\n` +
+        `5. Click "Load unpacked"\n` +
+        `6. Select the extracted extension folder\n\n` +
+        `Note: Chrome does not allow websites to install extensions automatically for security reasons. For true one-click install, the extension must be published to the Chrome Web Store.`;
 
     if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(extensionPath).then(() => {
-            showSuccess('Extension install instructions copied to clipboard');
+        navigator.clipboard.writeText(repoDownloadUrl).then(() => {
+            showSuccess('Extension download link copied to clipboard');
         }).catch(() => {
             showInfo('Unable to copy to clipboard, please use the link displayed');
         });
@@ -164,8 +166,8 @@ function installExtensionFromPage() {
     dialog.innerHTML = `
         <div class="modal-dialog">
             <h2>Install Chrome Extension</h2>
-            <p>Download or clone the repo, then load the <code>extension/</code> folder in Chrome.</p>
-            <p><strong>Repo:</strong> <a href="${extensionPath}" target="_blank" rel="noreferrer">${extensionPath}</a></p>
+            <p>Chrome cannot install an unpacked extension automatically from a website for security reasons.</p>
+            <p><a class="btn-primary" href="${repoDownloadUrl}" target="_blank" rel="noreferrer">Download Extension Package</a></p>
             <pre>${installMessage}</pre>
             <button id="close-install-dialog" class="btn-primary">Close</button>
         </div>
