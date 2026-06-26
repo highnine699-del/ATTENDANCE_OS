@@ -17,11 +17,11 @@ function getUserId() {
 }
 
 function generateUserId() {
-    return 'user_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+    return 'user_' + Math.random().toString(36).slice(2, 11) + Date.now().toString(36);
 }
 
 function getStorageKey() {
-    return STORAGE_KEY_PREFIX + getUserId();
+    return `${STORAGE_KEY_PREFIX}${getUserId()}`;
 }
 
 export function exportState() {

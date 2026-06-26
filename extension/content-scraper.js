@@ -9,12 +9,27 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 });
 
+function parseIntValue(text) {
+    const cleaned = String(text || '').replace(/[^0-9\-]+/g, '');
+    const parsed = parseInt(cleaned, 10);
+    return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+function parseFloatValue(text) {
+    const cleaned = String(text || '').replace(/[^0-9\.\-]+/g, '');
+    const parsed = parseFloat(cleaned);
+    return Number.isNaN(parsed) ? 0 : parsed;
+}
+
 function scrapeAttendanceTable() {
     const courses = [];
     const semesterInfo = {};
 
-    // Find the attendance table
-    const table = document.querySelector('table');
+    // Find the attendance table using a heuristic to avoid wrong table selection
+    const table = Array.from(document.querySelectorAll('table')).find((table) => {
+        return /course|attendance|percentage|units/i.test(table.textContent);
+    }) || document.querySelector('table');
+
     if (!table) return { courses, semesterInfo };
 
     const rows = table.querySelectorAll('tbody tr');
@@ -25,14 +40,13 @@ function scrapeAttendanceTable() {
         try {
             const courseCode = cells[1]?.textContent.trim();
             const unitsText = cells[2]?.textContent.trim();
-            const totalClasses = parseInt(cells[4]?.textContent || 0);
-            const attended = parseInt(cells[5]?.textContent || 0);
-            const suppressed = parseInt(cells[6]?.textContent || 0);
+            const totalClasses = parseIntValue(cells[4]?.textContent);
+            const attended = parseIntValue(cells[5]?.textContent);
+            const suppressed = parseIntValue(cells[6]?.textContent);
             const percentageText = cells[7]?.textContent.trim();
 
-            // Parse units: "2CC" -> 2, "0UC" -> 0
-            const units = parseInt(unitsText) || 0;
-            const percentage = parseInt(percentageText) || 0;
+            const units = parseIntValue(unitsText);
+            const percentage = parseFloatValue(percentageText);
 
             courses.push({
                 courseCode,
@@ -47,10 +61,10 @@ function scrapeAttendanceTable() {
         }
     });
 
-    // Extract semester info
-    const headerText = document.body.textContent;
-    if (headerText.includes('LECTURE_WEEKS')) {
-        semesterInfo.lectureWeeks = 13; // Hardcode for now, parse dynamically later
+    const headerText = document.body.textContent || '';
+    const lectureWeeksMatch = headerText.match(/LECTURE_WEEKS\s*[:=]\s*(\d+)/i);
+    if (lectureWeeksMatch) {
+        semesterInfo.lectureWeeks = parseInt(lectureWeeksMatch[1], 10);
     }
 
     return { courses, semesterInfo };

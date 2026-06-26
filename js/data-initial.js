@@ -18,9 +18,9 @@ export const initialCourses = [
 ];
 
 export const semesterInfo = {
-    startDate: "2026-01-13",
-    endDate: "2026-04-26",
+    startDate: null,
+    endDate: null,
     lectureWeeks: 13,
-    examDate: "2026-05-01",
+    examDate: null,
     extractedFromPortal: false
 };

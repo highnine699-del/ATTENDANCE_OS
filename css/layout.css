@@ -182,7 +182,7 @@
 
 /* Module max-widths */
 .dashboard, .courses-module, .calculator-module,
-.sync-module, .settings-module { max-width: 1100px; }
+.sync-module, .settings-module, .analytics-module { max-width: 1100px; }
 .sync-module, .settings-module { max-width: 720px; }
 
 /* ── Grid ────────────────────────────────────────────────────────── */
@@ -226,4 +226,10 @@
     #content { padding: var(--space-md); }
 
     .courses-grid { grid-template-columns: 1fr; }
+    
+    .analytics-stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+    .analytics-stats-grid { grid-template-columns: 1fr; }
 }

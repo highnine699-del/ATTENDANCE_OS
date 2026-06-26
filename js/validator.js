@@ -13,7 +13,7 @@ export function validateCourse(course) {
         errors.push('Course title is required');
     }
 
-    if (typeof course.units !== 'number' || course.units < 0) {
+    if (!Number.isFinite(course.units) || course.units < 0) {
         errors.push('Units must be a non-negative number');
     }
 
@@ -30,11 +30,11 @@ export function validateCourse(course) {
 export function validateAttendance(attended, total) {
     const errors = [];
 
-    if (typeof attended !== 'number' || attended < 0) {
+    if (!Number.isFinite(attended) || attended < 0) {
         errors.push('Attended must be a non-negative number');
     }
 
-    if (typeof total !== 'number' || total < 0) {
+    if (!Number.isFinite(total) || total < 0) {
         errors.push('Total classes must be a non-negative number');
     }
 
@@ -59,8 +59,16 @@ export function validateSemesterInfo(info) {
         errors.push('Invalid end date');
     }
 
-    if (info.lectureWeeks && (typeof info.lectureWeeks !== 'number' || info.lectureWeeks < 0)) {
-        errors.push('Lecture weeks must be a non-negative number');
+    if (info.lectureWeeks !== undefined && info.lectureWeeks !== null) {
+        if (!Number.isFinite(info.lectureWeeks) || info.lectureWeeks < 1) {
+            errors.push('Lecture weeks must be a positive number');
+        }
+    }
+
+    if (info.startDate && info.endDate && isValidDate(info.startDate) && isValidDate(info.endDate)) {
+        if (new Date(info.startDate) > new Date(info.endDate)) {
+            errors.push('Start date must be before end date');
+        }
     }
 
     return {
@@ -78,8 +86,8 @@ export function validateSettings(settings) {
     const errors = [];
 
     if (settings.passThresholdPercent !== undefined) {
-        if (typeof settings.passThresholdPercent !== 'number' || 
-            settings.passThresholdPercent < 0 || 
+        if (!Number.isFinite(settings.passThresholdPercent) ||
+            settings.passThresholdPercent < 0 ||
             settings.passThresholdPercent > 100) {
             errors.push('Pass threshold must be between 0 and 100');
         }

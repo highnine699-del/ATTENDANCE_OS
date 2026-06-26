@@ -1,32 +1,31 @@
-import { calculateSafeSkips, calculateRecoveryPlan, calcLecturesNeeded,
-         getWeeksRemaining, getStatusMeta, getStatus, calculatePercentage } from '../engine.js';
+import {
+    calculateSafeSkips, calculateRecoveryPlan, calcLecturesNeeded,
+    getWeeksRemaining, getStatusMeta, getStatus, calculatePercentage
+} from '../engine.js';
 import { icons } from '../icons.js';
 
-// FIX: module-level variable persists across re-renders
-// Old code had `const currentWeek = 1` inside the function — it reset on every render,
-// making the week input completely non-functional.
 let _currentWeek = null;
 
-export function renderCalculator(state, container) {
-    const courses    = state.getCourses();
-    const settings   = state.getSettings();
-    const semInfo    = state.getSemesterInfo();
-    const threshold  = settings.passThresholdPercent || 75;
-    const totalWeeks = parseInt(semInfo.lectureWeeks) || 13;
-
-    // First render: estimate current week from semester dates
-    if (_currentWeek === null) {
-        if (semInfo.startDate) {
-            const start   = new Date(semInfo.startDate);
+function estimateCurrentWeek(semInfo, totalWeeks) {
+    if (semInfo.startDate) {
+        const start = new Date(semInfo.startDate);
+        if (!Number.isNaN(start.getTime())) {
             const elapsed = (Date.now() - start.getTime()) / (7 * 864e5);
-            _currentWeek  = Math.min(Math.max(1, Math.ceil(elapsed)), totalWeeks);
-        } else {
-            _currentWeek = 1;
+            return Math.min(Math.max(1, Math.ceil(elapsed)), totalWeeks);
         }
     }
+    return 1;
+}
 
-    const currentWeek = _currentWeek;
-    const weeksLeft   = getWeeksRemaining(totalWeeks, currentWeek);
+export function renderCalculator(state, container) {
+    const courses = state.getCourses();
+    const settings = state.getSettings();
+    const semInfo = state.getSemesterInfo();
+    const threshold = settings.passThresholdPercent || 75;
+    const totalWeeks = parseInt(semInfo.lectureWeeks) || 13;
+
+    const currentWeek = _currentWeek !== null ? _currentWeek : estimateCurrentWeek(semInfo, totalWeeks);
+    const weeksLeft = getWeeksRemaining(totalWeeks, currentWeek);
 
     const html = `
         <div class="calculator-module">
@@ -42,24 +41,24 @@ export function renderCalculator(state, container) {
 
             <div class="courses-grid">
                 ${courses.map(c => {
-                    const attended = c.attended || 0;
-                    const total    = c.totalClasses || 0;
-                    const pct      = calculatePercentage(attended, total);
-                    const status   = total > 0 ? getStatus(pct, threshold) : 'no-data';
-                    const meta     = getStatusMeta(status);
-                    const safeSkips = calculateSafeSkips(attended, total, threshold);
-                    const lectNeeded = calcLecturesNeeded(attended, total, threshold);
-                    // Estimate lectures per week for this course
-                    const lectPerWeek = total > 0 ? Math.max(1, Math.round((total / Math.min(currentWeek, totalWeeks)) * 10) / 10) : 1;
-                    const recovery = calculateRecoveryPlan(attended, total, weeksLeft, threshold, lectPerWeek);
+        const attended = c.attended || 0;
+        const total = c.totalClasses || 0;
+        const pct = calculatePercentage(attended, total);
+        const status = total > 0 ? getStatus(pct, threshold) : 'no-data';
+        const meta = getStatusMeta(status);
+        const safeSkips = calculateSafeSkips(attended, total, threshold);
+        const lectNeeded = calcLecturesNeeded(attended, total, threshold);
+        // Estimate lectures per week for this course
+        const lectPerWeek = total > 0 && currentWeek > 0 ? Math.max(1, Math.round((total / Math.min(currentWeek, totalWeeks)) * 10) / 10) : 1;
+        const recovery = calculateRecoveryPlan(attended, total, weeksLeft, threshold, lectPerWeek);
 
-                    return `
+        return `
                         <div class="course-card ${meta.cssClass}">
                             <h4>${c.courseCode}</h4>
                             <p class="course-title">${c.courseTitle}</p>
                             ${total > 0 ? `
                             <div class="attendance-bar-container">
-                                <div class="attendance-bar" style="width:${Math.min(100,pct)}%;background:${meta.color}"></div>
+                                <div class="attendance-bar" style="width:${Math.min(100, pct)}%;background:${meta.color}"></div>
                             </div>
                             <div class="course-stats">
                                 <span>${attended}/${total}</span>
@@ -67,15 +66,15 @@ export function renderCalculator(state, container) {
                             </div>
                             <div class="calculator-results">
                                 ${pct >= threshold
-                                    ? `<p class="calc-good">✓ Safe — <strong>${safeSkips}</strong> skip${safeSkips !== 1 ? 's' : ''} remaining</p>`
-                                    : `<p class="calc-bad">✗ Below threshold — need <strong>${lectNeeded > 0 ? lectNeeded : '?'}</strong> consecutive classes</p>`
-                                }
+                    ? `<p class="calc-good">✓ Safe — <strong>${safeSkips}</strong> skip${safeSkips !== 1 ? 's' : ''} remaining</p>`
+                    : `<p class="calc-bad">✗ Below threshold — need <strong>${lectNeeded > 0 ? lectNeeded : '?'}</strong> consecutive classes</p>`
+                }
                                 <p class="recovery-msg">${recovery.message}</p>
                                 <p class="weeks-left-note">${weeksLeft} weeks left · ~${lectPerWeek.toFixed(1)} lectures/week</p>
                             </div>` : `
                             <p class="muted" style="margin-top:.5rem">No attendance data yet</p>`}
                         </div>`;
-                }).join('')}
+    }).join('')}
             </div>
 
             <div class="what-if-section">
@@ -117,8 +116,8 @@ export function renderCalculator(state, container) {
 
     // Week input — persist value across re-renders
     document.getElementById('current-week')?.addEventListener('input', e => {
-        const val = parseInt(e.target.value);
-        if (val >= 1 && val <= totalWeeks) {
+        const val = Number.parseInt(e.target.value, 10);
+        if (Number.isFinite(val) && val >= 1 && val <= totalWeeks) {
             _currentWeek = val;
             renderCalculator(state, container);
         }
@@ -126,33 +125,40 @@ export function renderCalculator(state, container) {
 
     // What-if simulator
     document.getElementById('what-if-calculate')?.addEventListener('click', () => {
-        const code     = document.getElementById('what-if-course').value;
+        const code = document.getElementById('what-if-course').value;
         const scenario = document.getElementById('what-if-scenario').value;
-        const number   = parseInt(document.getElementById('what-if-number').value) || 0;
+        const number = Number.parseInt(document.getElementById('what-if-number').value, 10);
         const resultDiv = document.getElementById('what-if-result');
 
-        if (!code) { resultDiv.innerHTML = '<p class="error">Please select a course</p>'; return; }
+        if (!code) {
+            resultDiv.innerHTML = '<p class="error">Please select a course</p>';
+            return;
+        }
+        if (!Number.isFinite(number) || number <= 0) {
+            resultDiv.innerHTML = '<p class="error">Enter a positive number of classes</p>';
+            return;
+        }
         const course = state.getCourse(code);
         if (!course) return;
 
         let newAttended = course.attended || 0;
-        let newTotal    = course.totalClasses || 0;
+        let newTotal = course.totalClasses || 0;
 
         if (scenario === 'attend') { newAttended += number; newTotal += number; }
         else if (scenario === 'skip') { newTotal += number; }
         else if (scenario === 'perfect') {
-            const lectPerWeek = newTotal > 0 ? Math.max(1, Math.round(newTotal / Math.min(currentWeek, totalWeeks))) : 1;
-            const remaining   = weeksLeft * lectPerWeek;
+            const lectPerWeek = newTotal > 0 && currentWeek > 0 ? Math.max(1, Math.round(newTotal / Math.min(currentWeek, totalWeeks))) : 1;
+            const remaining = weeksLeft * lectPerWeek;
             newAttended += remaining;
-            newTotal    += remaining;
+            newTotal += remaining;
         }
 
-        const oldPct = calculatePercentage(course.attended, course.totalClasses);
+        const oldPct = calculatePercentage(course.attended || 0, course.totalClasses || 0);
         const newPct = calculatePercentage(newAttended, newTotal);
-        const diff   = Math.round((newPct - oldPct) * 10) / 10;
+        const diff = Math.round((newPct - oldPct) * 10) / 10;
         const oldMeta = getStatusMeta(getStatus(oldPct, threshold));
         const newMeta = getStatusMeta(getStatus(newPct, threshold));
-        const arrow   = diff > 0 ? '↑' : diff < 0 ? '↓' : '→';
+        const arrow = diff > 0 ? '↑' : diff < 0 ? '↓' : '→';
         const diffColor = diff > 0 ? 'var(--color-very-safe)' : diff < 0 ? 'var(--color-critical)' : 'var(--text-secondary)';
 
         resultDiv.innerHTML = `
@@ -172,9 +178,8 @@ export function renderCalculator(state, container) {
                     </div>
                 </div>
                 <p class="result-status" style="color:${newMeta.color}">Status: ${newMeta.label}</p>
-                <p class="result-detail">${
-                    scenario === 'attend' ? `After attending ${number} more classes` :
-                    scenario === 'skip'   ? `After skipping ${number} classes` :
+                <p class="result-detail">${scenario === 'attend' ? `After attending ${number} more classes` :
+                scenario === 'skip' ? `After skipping ${number} classes` :
                     `With perfect attendance for remaining ${weeksLeft} weeks`}</p>
                 ${newPct < threshold && oldPct >= threshold ? '<p style="color:var(--color-critical)">⚠️ This would drop you below threshold!</p>' : ''}
                 ${newPct >= threshold && oldPct < threshold ? '<p style="color:var(--color-very-safe)">✓ This would bring you back to safe zone!</p>' : ''}

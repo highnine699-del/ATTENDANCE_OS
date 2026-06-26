@@ -3,7 +3,10 @@
     "name": "Attendance OS",
     "version": "1.0.0",
     "description": "Auto-sync your LMU attendance from the portal",
-    "permissions": ["storage", "tabs"],
+    "permissions": [
+        "storage",
+        "tabs"
+    ],
     "host_permissions": [
         "https://att2.lmu.edu.ng/*"
     ],
@@ -16,17 +19,23 @@
     },
     "content_scripts": [
         {
-            "matches": ["https://att2.lmu.edu.ng/*"],
-            "js": ["content-scraper.js"],
+            "matches": [
+                "https://att2.lmu.edu.ng/*"
+            ],
+            "js": [
+                "content-scraper.js"
+            ],
             "run_at": "document_idle"
         },
         {
             "matches": [
                 "http://localhost:*/*",
                 "http://127.0.0.1:*/*",
-                "https://highnine699-del.github.io/*"
+                "https://highnine699-del.github.io/ATTENDANCE_TRACKER/*"
             ],
-            "js": ["webapp-bridge.js"],
+            "js": [
+                "webapp-bridge.js"
+            ],
             "run_at": "document_idle"
         }
     ],
@@ -34,7 +43,7 @@
         "matches": [
             "http://localhost:*/*",
             "http://127.0.0.1:*/*",
-            "https://highnine699-del.github.io/*"
+            "https://highnine699-del.github.io/ATTENDANCE_TRACKER/*"
         ]
     }
 }

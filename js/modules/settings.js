@@ -1,11 +1,12 @@
 import { validateSettings } from '../validator.js';
 import { exportState, importState, clearState } from '../storage.js';
+import { calculatePercentage, calculateSafeSkips, getStatus } from '../engine.js';
 import { icons } from '../icons.js';
 import { showSuccess, showError } from '../toast.js';
 
 export function renderSettings(state, container) {
-    const settings  = state.getSettings();
-    const semInfo   = state.getSemesterInfo();
+    const settings = state.getSettings();
+    const semInfo = state.getSemesterInfo();
 
     container.innerHTML = `
         <div class="settings-module">
@@ -20,7 +21,7 @@ export function renderSettings(state, container) {
                 </label>
                 <label>Theme
                     <select id="s-theme">
-                        <option value="dark"  ${settings.theme === 'dark'  ? 'selected' : ''}>Dark</option>
+                        <option value="dark"  ${settings.theme === 'dark' ? 'selected' : ''}>Dark</option>
                         <option value="light" ${settings.theme === 'light' ? 'selected' : ''}>Light</option>
                     </select>
                 </label>
@@ -55,11 +56,12 @@ export function renderSettings(state, container) {
     // Save user settings
     document.getElementById('s-save').addEventListener('click', () => {
         const prevTheme = settings.theme;
+        const thresholdValue = Number(document.getElementById('s-threshold').value);
         const updates = {
-            userName:              document.getElementById('s-name').value.trim(),
-            passThresholdPercent:  parseInt(document.getElementById('s-threshold').value),
-            theme:                 document.getElementById('s-theme').value,
-            autoSync:              document.getElementById('s-autosync').checked
+            userName: document.getElementById('s-name').value.trim(),
+            passThresholdPercent: Number.isFinite(thresholdValue) ? thresholdValue : NaN,
+            theme: document.getElementById('s-theme').value,
+            autoSync: document.getElementById('s-autosync').checked
         };
         const { valid, errors } = validateSettings(updates);
         if (!valid) { showError(errors.join(' · ')); return; }
@@ -77,11 +79,12 @@ export function renderSettings(state, container) {
 
     // Save semester info — FIX: was state.state.semesterInfo = {...} bypassing notify()
     document.getElementById('si-save').addEventListener('click', () => {
+        const lectureWeeksInput = Number(document.getElementById('si-weeks').value);
         state.updateSemesterInfo({
-            startDate:    document.getElementById('si-start').value,
-            endDate:      document.getElementById('si-end').value,
-            lectureWeeks: parseInt(document.getElementById('si-weeks').value) || 13,
-            examDate:     document.getElementById('si-exam').value
+            startDate: document.getElementById('si-start').value,
+            endDate: document.getElementById('si-end').value,
+            lectureWeeks: Number.isFinite(lectureWeeksInput) ? lectureWeeksInput : 13,
+            examDate: document.getElementById('si-exam').value
         });
         showSuccess('Semester info updated');
     });
@@ -91,9 +94,9 @@ export function renderSettings(state, container) {
         const data = exportState();
         if (!data) { showError('Nothing to export'); return; }
         const blob = new Blob([data], { type: 'application/json' });
-        const url  = URL.createObjectURL(blob);
-        const a    = Object.assign(document.createElement('a'), {
-            href: url, download: `attendance-os-backup-${new Date().toISOString().slice(0,10)}.json`
+        const url = URL.createObjectURL(blob);
+        const a = Object.assign(document.createElement('a'), {
+            href: url, download: `attendance-os-backup-${new Date().toISOString().slice(0, 10)}.json`
         });
         a.click(); URL.revokeObjectURL(url);
         showSuccess('JSON exported');
@@ -104,20 +107,19 @@ export function renderSettings(state, container) {
         const courses = state.getCourses();
         const threshold = settings.passThresholdPercent || 75;
         const rows = [
-            ['Course Code','Course Title','Units','Type','Attended','Total','Percentage','Status','Safe Skips'],
+            ['Course Code', 'Course Title', 'Units', 'Type', 'Attended', 'Total', 'Percentage', 'Status', 'Safe Skips'],
             ...courses.map(c => {
-                const pct    = c.totalClasses > 0 ? Math.round((c.attended/c.totalClasses)*1000)/10 : 0;
-                const status = pct >= threshold ? 'Safe' : pct >= threshold - 15 ? 'Warning' : 'Danger';
-                const skips  = c.totalClasses > 0 && pct >= threshold
-                    ? Math.max(0, Math.floor((c.attended*100 - threshold*c.totalClasses)/threshold)) : 0;
-                return [c.courseCode, `"${c.courseTitle}"`, c.units, c.courseType, c.attended, c.totalClasses, pct+'%', status, skips];
+                const pct = calculatePercentage(c.attended, c.totalClasses);
+                const status = getStatus(pct, threshold);
+                const skips = calculateSafeSkips(c.attended, c.totalClasses, threshold);
+                return [c.courseCode, `"${c.courseTitle}"`, c.units, c.courseType, c.attended, c.totalClasses, pct + '%', status, skips];
             })
         ];
-        const csv  = rows.map(r => r.join(',')).join('\n');
+        const csv = rows.map(r => r.join(',')).join('\n');
         const blob = new Blob([csv], { type: 'text/csv' });
-        const url  = URL.createObjectURL(blob);
-        const a    = Object.assign(document.createElement('a'), {
-            href: url, download: `attendance-os-${new Date().toISOString().slice(0,10)}.csv`
+        const url = URL.createObjectURL(blob);
+        const a = Object.assign(document.createElement('a'), {
+            href: url, download: `attendance-os-${new Date().toISOString().slice(0, 10)}.csv`
         });
         a.click(); URL.revokeObjectURL(url);
         showSuccess('CSV exported');

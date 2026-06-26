@@ -3,9 +3,11 @@
  */
 
 const APP_URLS = [
-    'https://highnine699-del.github.io/attendance-os/',
+    'https://highnine699-del.github.io/ATTENDANCE_TRACKER/',
     'http://localhost:3000',
-    'http://localhost:8080'
+    'http://127.0.0.1:3000',
+    'http://localhost:8080',
+    'http://127.0.0.1:8080'
 ];
 
 function calculatePercentage(attended, total) {
@@ -24,25 +26,89 @@ function calculateWeightedAttendance(courses) {
     return Math.round((weightedSum / totalWeight) * 10) / 10;
 }
 
+function chromeTabsQuery(query) {
+    return new Promise((resolve, reject) => {
+        chrome.tabs.query(query, (tabs) => {
+            if (chrome.runtime.lastError) {
+                reject(new Error(chrome.runtime.lastError.message));
+            } else {
+                resolve(tabs);
+            }
+        });
+    });
+}
+
+function chromeTabsUpdate(tabId, updateProperties) {
+    return new Promise((resolve, reject) => {
+        chrome.tabs.update(tabId, updateProperties, (tab) => {
+            if (chrome.runtime.lastError) {
+                reject(new Error(chrome.runtime.lastError.message));
+            } else {
+                resolve(tab);
+            }
+        });
+    });
+}
+
+function chromeWindowsUpdate(windowId, updateInfo) {
+    return new Promise((resolve, reject) => {
+        chrome.windows.update(windowId, updateInfo, (window) => {
+            if (chrome.runtime.lastError) {
+                reject(new Error(chrome.runtime.lastError.message));
+            } else {
+                resolve(window);
+            }
+        });
+    });
+}
+
+function chromeTabsCreate(createProperties) {
+    return new Promise((resolve, reject) => {
+        chrome.tabs.create(createProperties, (tab) => {
+            if (chrome.runtime.lastError) {
+                reject(new Error(chrome.runtime.lastError.message));
+            } else {
+                resolve(tab);
+            }
+        });
+    });
+}
+
+function chromeRuntimeSendMessage(message) {
+    return new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage(message, (response) => {
+            if (chrome.runtime.lastError) {
+                reject(new Error(chrome.runtime.lastError.message));
+            } else {
+                resolve(response);
+            }
+        });
+    });
+}
+
 function renderStats(data) {
     const overallEl = document.getElementById('overall-pct');
-    const atRiskEl  = document.getElementById('at-risk-list');
+    const atRiskEl = document.getElementById('at-risk-list');
     if (!overallEl || !atRiskEl) return;
 
     const courses = data?.courses || [];
-    if (courses.length === 0) {
+    if (!Array.isArray(courses) || courses.length === 0) {
         overallEl.textContent = '—';
         atRiskEl.innerHTML = '<li class="muted">No data synced yet</li>';
         return;
     }
 
-    const weighted = calculateWeightedAttendance(courses);
-    overallEl.textContent = weighted > 0 ? `${weighted}%` : '—';
-    overallEl.style.color = weighted >= 75 ? '#10b981' : weighted >= 60 ? '#f59e0b' : '#ef4444';
+    const activeCourses = courses.filter(c => c.totalClasses > 0);
+    const weighted = calculateWeightedAttendance(activeCourses.length ? activeCourses : courses);
+    const hasData = activeCourses.length > 0;
+    overallEl.textContent = hasData ? `${weighted}%` : '—';
+    overallEl.style.color = hasData
+        ? (weighted >= 75 ? '#10b981' : weighted >= 60 ? '#f59e0b' : '#ef4444')
+        : 'var(--text-secondary)';
 
-    const atRisk = courses
-        .filter(c => c.totalClasses > 0)
+    const atRisk = activeCourses
         .map(c => ({ ...c, pct: calculatePercentage(c.attended, c.totalClasses) }))
+        .filter(c => c.pct < 75)
         .sort((a, b) => a.pct - b.pct)
         .slice(0, 3);
 
@@ -60,14 +126,14 @@ function renderStats(data) {
 async function openApp() {
     for (const url of APP_URLS) {
         const pattern = url.includes('localhost') ? `${url}/*` : url + '*';
-        const tabs = await chrome.tabs.query({ url: pattern });
+        const tabs = await chromeTabsQuery({ url: pattern });
         if (tabs.length > 0) {
-            await chrome.tabs.update(tabs[0].id, { active: true });
-            await chrome.windows.update(tabs[0].windowId, { focused: true });
+            await chromeTabsUpdate(tabs[0].id, { active: true });
+            await chromeWindowsUpdate(tabs[0].windowId, { focused: true });
             return;
         }
     }
-    chrome.tabs.create({ url: APP_URLS[0] });
+    await chromeTabsCreate({ url: APP_URLS[0] });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -76,6 +142,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const statusText = document.getElementById('status-text');
 
     chrome.storage.local.get('attendanceData', (result) => {
+        if (chrome.runtime.lastError) {
+            statusText.textContent = 'Unable to load saved attendance data';
+            statusText.style.color = '#ef4444';
+            return;
+        }
         if (result.attendanceData?.courses?.length) {
             statusText.textContent = `${result.attendanceData.courses.length} courses synced`;
             renderStats(result.attendanceData);
@@ -87,43 +158,45 @@ document.addEventListener('DOMContentLoaded', () => {
         scrapeBtn.disabled = true;
 
         try {
-            const tabs = await chrome.tabs.query({ url: 'https://att2.lmu.edu.ng/*' });
+            const tabs = await chromeTabsQuery({ url: 'https://att2.lmu.edu.ng/*' });
 
             if (tabs.length === 0) {
                 statusText.textContent = 'Opening LMU portal...';
-                await chrome.tabs.create({ url: 'https://att2.lmu.edu.ng' });
+                await chromeTabsCreate({ url: 'https://att2.lmu.edu.ng' });
                 statusText.textContent = 'Please login, then click Sync Now again';
-                scrapeBtn.disabled = false;
                 return;
             }
 
             statusText.textContent = 'Scraping attendance data...';
 
-            const response = await chrome.runtime.sendMessage({
+            const response = await chromeRuntimeSendMessage({
                 action: 'scrapeAttendance',
                 tabId: tabs[0].id
             });
 
-            if (response.success && response.data) {
-                await chrome.runtime.sendMessage({
-                    action: 'saveAttendanceData',
-                    data: response.data
-                });
-
-                const courseCount = response.data.courses.length;
-                statusText.textContent = `Synced ${courseCount} courses`;
-                statusText.style.color = '#10b981';
-                renderStats(response.data);
-            } else {
-                statusText.textContent = `Failed: ${response.error || 'Unknown error'}`;
-                statusText.style.color = '#ef4444';
+            if (!response || !response.success) {
+                throw new Error(response?.error || 'Unknown scrape failure');
             }
+
+            const saveResponse = await chromeRuntimeSendMessage({
+                action: 'saveAttendanceData',
+                data: response.data
+            });
+
+            if (!saveResponse?.success) {
+                throw new Error(saveResponse?.error || 'Failed to save attendance data');
+            }
+
+            const courseCount = response.data.courses.length;
+            statusText.textContent = `Synced ${courseCount} courses`;
+            statusText.style.color = '#10b981';
+            renderStats(response.data);
         } catch (err) {
             statusText.textContent = `Error: ${err.message}`;
             statusText.style.color = '#ef4444';
+        } finally {
+            scrapeBtn.disabled = false;
         }
-
-        scrapeBtn.disabled = false;
     });
 
     openWebappBtn.addEventListener('click', () => openApp());

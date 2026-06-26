@@ -107,7 +107,7 @@ git push -u origin main
 
 After 1-2 minutes, your site will be available at:
 ```
-https://highnine699.github.io/attendance-os/
+https://highnine699-del.github.io/ATTENDANCE_TRACKER/
 ```
 
 ### Step 6: Update Extension for Production

@@ -3,11 +3,13 @@
  * Shared helpers used across modules
  */
 
+import { calculatePercentage, getStatus } from './engine.js';
+
 /**
  * Format percentage with 1 decimal place
  */
 export function formatPercentage(value) {
-    if (typeof value !== 'number') return '0%';
+    if (!Number.isFinite(value)) return '0%';
     return (Math.round(value * 10) / 10) + '%';
 }
 
@@ -17,6 +19,7 @@ export function formatPercentage(value) {
 export function formatDate(date) {
     if (!date) return 'Never';
     if (typeof date === 'string') date = new Date(date);
+    if (Number.isNaN(date.getTime())) return 'Invalid date';
     return date.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
@@ -30,6 +33,7 @@ export function formatDate(date) {
 export function formatDateTime(date) {
     if (!date) return 'Never';
     if (typeof date === 'string') date = new Date(date);
+    if (Number.isNaN(date.getTime())) return 'Invalid date';
     return date.toLocaleString('en-US', {
         year: 'numeric',
         month: 'short',
@@ -80,7 +84,7 @@ export function debounce(func, wait) {
  */
 export function throttle(func, limit) {
     let inThrottle;
-    return function(...args) {
+    return function (...args) {
         if (!inThrottle) {
             func.apply(this, args);
             inThrottle = true;
@@ -95,7 +99,7 @@ export function throttle(func, limit) {
 export function deepClone(obj) {
     if (obj === null || typeof obj !== 'object') return obj;
     if (obj instanceof Date) return new Date(obj.getTime());
-    if (obj instanceof Array) return obj.map(item => deepClone(item));
+    if (Array.isArray(obj)) return obj.map(item => deepClone(item));
     if (obj instanceof Object) {
         const cloned = {};
         for (const key in obj) {
@@ -130,14 +134,18 @@ export function sortCourses(courses, sortBy = 'risk') {
 
 /**
  * Filter courses by status
+ * Recalculates percentage live from attended/totalClasses and uses threshold-relative levels
  */
 export function filterCoursesByStatus(courses, status, threshold = 75) {
     return courses.filter(c => {
-        if (status === 'very_safe') return c.percentage >= 90;
-        if (status === 'safe') return c.percentage >= threshold && c.percentage < 90;
-        if (status === 'warning') return c.percentage >= 50 && c.percentage < threshold;
-        if (status === 'danger') return c.percentage >= 25 && c.percentage < 50;
-        if (status === 'critical') return c.percentage < 25;
+        const livePercentage = calculatePercentage(c.attended, c.totalClasses);
+        const courseStatus = getStatus(livePercentage, threshold);
+
+        if (status === 'very_safe') return courseStatus === 'very-safe';
+        if (status === 'safe') return courseStatus === 'safe';
+        if (status === 'warning') return courseStatus === 'warning';
+        if (status === 'danger') return courseStatus === 'danger';
+        if (status === 'critical') return courseStatus === 'critical';
         return true;
     });
 }
@@ -193,11 +201,12 @@ function downloadFile(blob, filename) {
  * Get contrasting text color for background
  */
 export function getTextColorForBackground(bgColor) {
-    // Simple luminance calculation
-    const hex = bgColor.replace('#', '');
-    const r = parseInt(hex.substr(0, 2), 16);
-    const g = parseInt(hex.substr(2, 2), 16);
-    const b = parseInt(hex.substr(4, 2), 16);
+    if (typeof bgColor !== 'string') return '#000000';
+    const hex = bgColor.replace('#', '').trim();
+    if (!/^[0-9A-Fa-f]{6}$/.test(hex)) return '#000000';
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
     return luminance > 0.5 ? '#000000' : '#FFFFFF';
 }
@@ -206,7 +215,7 @@ export function getTextColorForBackground(bgColor) {
  * Generate unique ID
  */
 export function generateId() {
-    return Math.random().toString(36).substr(2, 9);
+    return Math.random().toString(36).slice(2, 11);
 }
 
 /**

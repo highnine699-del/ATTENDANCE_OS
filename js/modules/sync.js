@@ -4,59 +4,53 @@ import { formatDateTime } from '../utils.js';
 import { showSuccess, showError, showInfo } from '../toast.js';
 import { icons } from '../icons.js';
 
-async function processImageOCR(imageFile) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            try {
-                const result = await Tesseract.recognize(e.target.result, 'eng', {
-                    logger: m => console.log(m)
-                });
-                resolve(result.data.text);
-            } catch (err) {
-                reject(err);
-            }
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(imageFile);
-    });
-}
 
 function parsePortalTable(text) {
-    const lines = text.trim().split('\n');
+    const lines = String(text || '').trim().split('\n');
     const courses = [];
-    
+
+    function safeInt(value) {
+        const parsed = Number.parseInt(String(value).replace(/[^0-9\-]/g, ''), 10);
+        return Number.isFinite(parsed) ? parsed : 0;
+    }
+
+    function safeFloat(value) {
+        const parsed = Number.parseFloat(String(value).replace(/[^0-9\.\-]/g, ''));
+        return Number.isFinite(parsed) ? parsed : 0;
+    }
+
     // Skip header lines until we find the data rows
     let dataStartIndex = -1;
     for (let i = 0; i < lines.length; i++) {
-        if (lines[i].includes('SN') && lines[i].includes('COURSE') && lines[i].includes('UNITS')) {
+        const header = lines[i].toUpperCase();
+        if (header.includes('SN') && header.includes('COURSE') && header.includes('UNITS')) {
             dataStartIndex = i + 1;
             break;
         }
     }
-    
+
     if (dataStartIndex === -1) return null;
-    
+
     for (let i = dataStartIndex; i < lines.length; i++) {
         const line = lines[i].trim();
         if (!line || line.includes('Showing') || line.includes('entries') || line.includes('First')) break;
-        
-        // Split by whitespace (handles tabs and spaces)
-        const parts = line.split(/\s+/).filter(p => p);
-        
-        // Expected format: SN COURSE UNITS LECTURE_WEEKS TOTAL_CLASS NO_ATTENDED NO_SUPPRESSED PERCENTAGE APPROVAL
+
+        let parts = line.split('\t').map(p => p.trim()).filter(p => p);
+        if (parts.length < 8) {
+            parts = line.split(/\s+/).filter(p => p);
+        }
+
         if (parts.length >= 8) {
-            const courseCode = parts[1].trim().toUpperCase();
-            const unitsText = parts[2];
-            const totalClasses = parseInt(parts[4]) || 0;
-            const attended = parseInt(parts[5]) || 0;
-            const suppressed = parseInt(parts[6]) || 0;
-            const percentageText = parts[7];
-            
-            // Parse units: "2CC" -> 2, "0UC" -> 0
-            const units = parseInt(unitsText) || 0;
-            const percentage = parseFloat(percentageText) || 0;
-            
+            const courseCode = String(parts[1] || '').trim().toUpperCase();
+            const unitsText = parts[2] || '';
+            const totalClasses = safeInt(parts[4]);
+            const attended = safeInt(parts[5]);
+            const suppressed = safeInt(parts[6]);
+            const percentageText = parts[7] || '';
+
+            const units = safeInt(unitsText);
+            const percentage = safeFloat(percentageText);
+
             courses.push({
                 courseCode,
                 units,
@@ -67,7 +61,7 @@ function parsePortalTable(text) {
             });
         }
     }
-    
+
     return courses;
 }
 
@@ -112,14 +106,14 @@ SN	COURSE	UNITS	LECTURE_WEEKS	TOTAL_CLASS	NO_ATTENDED	NO_SUPPRESSED	PERCENTAGE	A
                 ${syncHistory.length > 0 ? `
                     <ul>
                         ${syncHistory
-                            .reverse()
-                            .map(entry => `
+                .reverse()
+                .map(entry => `
                                 <li>
                                     ${formatDateTime(entry.timestamp)} — 
                                     ${entry.source} (${entry.coursesUpdated} courses)
                                 </li>
                             `)
-                            .join('')}
+                .join('')}
                     </ul>
                 ` : `
                     <div class="empty-state">
@@ -139,19 +133,19 @@ SN	COURSE	UNITS	LECTURE_WEEKS	TOTAL_CLASS	NO_ATTENDED	NO_SUPPRESSED	PERCENTAGE	A
         const btn = document.getElementById('sync-extension-btn');
         const msg = document.getElementById('sync-status');
         const originalText = btn.textContent;
-        
+
         btn.innerHTML = '<span class="spinner"></span>';
         btn.classList.add('btn-loading');
         msg.textContent = 'Syncing...';
         msg.classList.remove('success', 'error');
-        
+
         const result = await state.syncFromExtension();
-        
+
         btn.innerHTML = originalText;
         btn.classList.remove('btn-loading');
-        
+
         if (result.success) {
-            msg.textContent = `${icons.check} Synced ${result.coursesUpdated} courses`;
+            msg.innerHTML = `${icons.check} Synced ${result.coursesUpdated} courses`;
             msg.classList.add('success');
             showSuccess(`Synced ${result.coursesUpdated} courses`);
         } else {
@@ -165,22 +159,22 @@ SN	COURSE	UNITS	LECTURE_WEEKS	TOTAL_CLASS	NO_ATTENDED	NO_SUPPRESSED	PERCENTAGE	A
         const textarea = document.getElementById('portal-paste');
         const msg = document.getElementById('paste-status');
         const text = textarea.value.trim();
-        
+
         if (!text) {
-            msg.textContent = `${icons.x} Please paste the attendance table first.`;
+            msg.innerHTML = `${icons.x} Please paste the attendance table first.`;
             msg.classList.add('error');
             showError('Please paste the attendance table first.');
             return;
         }
-        
+
         const courses = parsePortalTable(text);
         if (!courses || courses.length === 0) {
-            msg.textContent = `${icons.x} Could not parse the table. Make sure you copied the full table including headers.`;
+            msg.innerHTML = `${icons.x} Could not parse the table. Make sure you copied the full table including headers.`;
             msg.classList.add('error');
             showError('Could not parse the table. Make sure you copied the full table including headers.');
             return;
         }
-        
+
         let updatedCount = 0;
         courses.forEach(extCourse => {
             const existing = state.getCourse(extCourse.courseCode);
@@ -195,10 +189,10 @@ SN	COURSE	UNITS	LECTURE_WEEKS	TOTAL_CLASS	NO_ATTENDED	NO_SUPPRESSED	PERCENTAGE	A
                 updatedCount++;
             }
         });
-        
+
         state.recordSync('portal-paste', updatedCount);
-        
-        msg.textContent = `${icons.check} Imported ${updatedCount} courses from portal table`;
+
+        msg.innerHTML = `${icons.check} Imported ${updatedCount} courses from portal table`;
         msg.classList.remove('error');
         msg.classList.add('success');
         showSuccess(`Imported ${updatedCount} courses from portal table`);
@@ -208,14 +202,23 @@ SN	COURSE	UNITS	LECTURE_WEEKS	TOTAL_CLASS	NO_ATTENDED	NO_SUPPRESSED	PERCENTAGE	A
     document.getElementById('manual-sync-form').addEventListener('submit', (e) => {
         e.preventDefault();
         const fd = new FormData(e.target);
-        const courseCode = fd.get('courseCode').toUpperCase();
-        const attended = parseInt(fd.get('attended'));
-        const totalClasses = parseInt(fd.get('totalClasses'));
+        const courseCode = String(fd.get('courseCode') || '').trim().toUpperCase();
+        const attended = Number.parseInt(fd.get('attended'), 10);
+        const totalClasses = Number.parseInt(fd.get('totalClasses'), 10);
+        const statusEl = document.getElementById('sync-status');
+
+        if (!courseCode) {
+            statusEl.innerHTML = `${icons.x} Course code is required.`;
+            statusEl.classList.add('error');
+            statusEl.classList.remove('success');
+            return;
+        }
 
         const validation = validateAttendance(attended, totalClasses);
         if (!validation.valid) {
-            document.getElementById('sync-status').textContent = `${icons.x} ${validation.errors.join(', ')}`;
-            document.getElementById('sync-status').classList.add('error');
+            statusEl.innerHTML = `${icons.x} ${validation.errors.join(', ')}`;
+            statusEl.classList.add('error');
+            statusEl.classList.remove('success');
             return;
         }
 
@@ -227,12 +230,13 @@ SN	COURSE	UNITS	LECTURE_WEEKS	TOTAL_CLASS	NO_ATTENDED	NO_SUPPRESSED	PERCENTAGE	A
                 percentage: calculatePercentage(attended, totalClasses),
                 syncSource: 'manual'
             });
-            document.getElementById('sync-status').textContent = `${icons.check} Updated ${courseCode}`;
-            document.getElementById('sync-status').classList.remove('error');
-            document.getElementById('sync-status').classList.add('success');
+            statusEl.innerHTML = `${icons.check} Updated ${courseCode}`;
+            statusEl.classList.remove('error');
+            statusEl.classList.add('success');
         } else {
-            document.getElementById('sync-status').textContent = `${icons.x} Course ${courseCode} not found. Add it in Courses tab first.`;
-            document.getElementById('sync-status').classList.add('error');
+            statusEl.innerHTML = `${icons.x} Course ${courseCode} not found. Add it in Courses tab first.`;
+            statusEl.classList.remove('success');
+            statusEl.classList.add('error');
         }
         e.target.reset();
     });

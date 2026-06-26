@@ -20,6 +20,7 @@ const ASSETS = [
     '/js/modules/calculator.js',
     '/js/modules/sync.js',
     '/js/modules/settings.js',
+    '/js/modules/analytics.js',
     '/manifest.json'
 ];
 

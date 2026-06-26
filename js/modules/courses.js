@@ -5,7 +5,7 @@ import { icons } from '../icons.js';
 import { showSuccess, showError } from '../toast.js';
 
 export function renderCourses(state, container) {
-    const courses  = state.getCourses();
+    const courses = state.getCourses();
     const settings = state.getSettings();
     const threshold = settings.passThresholdPercent || 75;
 
@@ -66,10 +66,10 @@ export function renderCourses(state, container) {
 }
 
 function buildCourseCard(c, threshold) {
-    const stats   = calcCourseStats(c, threshold);
-    const meta    = stats.meta;
-    const pct     = stats.percentage;
-    const barPct  = c.totalClasses > 0 ? Math.min(100, pct) : 0;
+    const stats = calcCourseStats(c, threshold);
+    const meta = stats.meta;
+    const pct = stats.percentage;
+    const barPct = c.totalClasses > 0 ? Math.min(100, pct) : 0;
 
     const skipsInfo = c.totalClasses === 0
         ? '<span class="muted">No data yet</span>'
@@ -119,33 +119,33 @@ function buildCourseCard(c, threshold) {
 }
 
 function wireCoursesEvents(state, container, threshold) {
-    const sortSelect   = document.getElementById('sort-select');
+    const sortSelect = document.getElementById('sort-select');
     const filterSelect = document.getElementById('filter-select');
-    const typeFilter   = document.getElementById('type-filter');
-    const grid         = document.getElementById('courses-grid');
+    const typeFilter = document.getElementById('type-filter');
+    const grid = document.getElementById('courses-grid');
 
     function applySortFilter() {
-        const sortBy   = sortSelect.value;
-        const statusF  = filterSelect.value;
-        const typeF    = typeFilter.value;
+        const sortBy = sortSelect.value;
+        const statusF = filterSelect.value;
+        const typeF = typeFilter.value;
 
         let cards = Array.from(grid.querySelectorAll('.course-card'));
 
         cards.forEach(card => {
-            const pct    = parseFloat(card.dataset.percentage);
-            const type   = card.dataset.type;
+            const pct = parseFloat(card.dataset.percentage);
+            const type = card.dataset.type;
             const status = card.dataset.status;
-            const isAtRisk = ['warning','danger','critical'].includes(status);
+            const isAtRisk = ['warning', 'danger', 'critical'].includes(status);
             const statusOk = statusF === 'all' || (statusF === 'at-risk' && isAtRisk) || (statusF === 'safe' && !isAtRisk);
-            const typeOk   = typeF === 'all' || type === typeF;
+            const typeOk = typeF === 'all' || type === typeF;
             card.style.display = (statusOk && typeOk) ? '' : 'none';
         });
 
         const visible = cards.filter(c => c.style.display !== 'none');
         visible.sort((a, b) => {
-            if (sortBy === 'risk')       return parseFloat(a.dataset.percentage) - parseFloat(b.dataset.percentage);
+            if (sortBy === 'risk') return parseFloat(a.dataset.percentage) - parseFloat(b.dataset.percentage);
             if (sortBy === 'percentage') return parseFloat(b.dataset.percentage) - parseFloat(a.dataset.percentage);
-            if (sortBy === 'units')      return parseFloat(b.dataset.units) - parseFloat(a.dataset.units);
+            if (sortBy === 'units') return parseFloat(b.dataset.units) - parseFloat(a.dataset.units);
             return a.dataset.code.localeCompare(b.dataset.code);
         });
         visible.forEach(c => grid.appendChild(c));
@@ -160,16 +160,16 @@ function wireCoursesEvents(state, container, threshold) {
     // Quick +1 attended
     grid.addEventListener('click', e => {
         const attendBtn = e.target.closest('.btn-quick-attend');
-        const classBtn  = e.target.closest('.btn-quick-class');
-        const editBtn   = e.target.closest('.edit-btn');
+        const classBtn = e.target.closest('.btn-quick-class');
+        const editBtn = e.target.closest('.edit-btn');
         const deleteBtn = e.target.closest('.delete-btn');
 
         if (attendBtn) {
-            const code   = attendBtn.dataset.code;
+            const code = attendBtn.dataset.code;
             const course = state.getCourse(code);
             if (!course) return;
             const newAttended = course.attended + 1;
-            const newTotal    = course.totalClasses + 1;
+            const newTotal = course.totalClasses + 1;
             state.updateCourse(code, {
                 attended: newAttended, totalClasses: newTotal,
                 percentage: calculatePercentage(newAttended, newTotal)
@@ -179,7 +179,7 @@ function wireCoursesEvents(state, container, threshold) {
         }
 
         if (classBtn) {
-            const code   = classBtn.dataset.code;
+            const code = classBtn.dataset.code;
             const course = state.getCourse(code);
             if (!course) return;
             const newTotal = course.totalClasses + 1;
@@ -232,10 +232,10 @@ function showAddCourseModal(state, container) {
     modal.querySelector('#m-cancel').addEventListener('click', () => modal.remove());
     modal.querySelector('#m-submit').addEventListener('click', () => {
         const course = {
-            courseCode:  modal.querySelector('#m-code').value.trim().toUpperCase(),
-            courseTitle: modal.querySelector('#m-title').value.trim(),
-            units:       parseInt(modal.querySelector('#m-units').value),
-            courseType:  modal.querySelector('#m-type').value
+            courseCode: String(modal.querySelector('#m-code').value).trim().toUpperCase(),
+            courseTitle: String(modal.querySelector('#m-title').value).trim(),
+            units: Number.parseInt(modal.querySelector('#m-units').value, 10) || 0,
+            courseType: modal.querySelector('#m-type').value
         };
         const { valid, errors } = validateCourse(course);
         if (!valid) {
@@ -258,7 +258,7 @@ function showEditCourseModal(state, courseCode, container) {
     const history = (course.history || []).slice().reverse().slice(0, 10);
     const historyHtml = history.length > 0
         ? history.map(h => {
-            const pct = h.percentage ?? calculatePercentage(h.attended, h.totalClasses);
+            const pct = h.percentage ?? calculatePercentage(h.attended || 0, h.totalClasses || 0);
             return `<div class="history-entry">${formatDate(h.date)} — ${h.attended}/${h.totalClasses} (${pct}%)</div>`;
         }).join('')
         : '<p class="muted">No history yet.</p>';
@@ -285,9 +285,9 @@ function showEditCourseModal(state, courseCode, container) {
 
     modal.querySelector('#e-cancel').addEventListener('click', () => modal.remove());
     modal.querySelector('#e-submit').addEventListener('click', () => {
-        const attended    = parseInt(modal.querySelector('#e-attended').value);
-        const totalClasses = parseInt(modal.querySelector('#e-total').value);
-        const notes       = modal.querySelector('#e-notes').value.trim();
+        const attended = Number.parseInt(modal.querySelector('#e-attended').value, 10) || 0;
+        const totalClasses = Number.parseInt(modal.querySelector('#e-total').value, 10) || 0;
+        const notes = modal.querySelector('#e-notes').value.trim();
         const { valid, errors } = validateAttendance(attended, totalClasses);
         if (!valid) {
             const errEl = modal.querySelector('#edit-error');

@@ -41,11 +41,28 @@ function switchModule(moduleName) {
 }
 
 navItems.forEach(item => {
-    item.addEventListener('click', () => switchModule(item.dataset.module));
+    item.addEventListener('click', () => {
+        const moduleName = item.dataset.module;
+        if (moduleName && modules[moduleName]) {
+            switchModule(moduleName);
+        }
+    });
 });
 
 // ── Init ──────────────────────────────────────────────────────────────────
 state.init().then(() => {
+    // Remove loading screen
+    const loadingScreen = document.getElementById('loading-screen');
+    if (loadingScreen) {
+        loadingScreen.style.opacity = '0';
+        loadingScreen.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => loadingScreen.remove(), 300);
+    }
+    
+    // Show app
+    const app = document.getElementById('app');
+    if (app) app.style.display = 'flex';
+
     applyTheme(state.getSettings().theme);
 
     const chartIcon = document.querySelector('.icon-chart');
@@ -56,11 +73,22 @@ state.init().then(() => {
     updateUserDisplay();
     updateLastSyncDisplay();
     switchModule('dashboard');
-    console.log('Attendance OS initialized');
 
     // Auto-sync on load if enabled
     if (state.getSettings().autoSync) {
         triggerQuickSync(false); // silent (no toast on success)
+    }
+}).catch(err => {
+    console.error('Failed to initialize Attendance OS:', err);
+    const loadingScreen = document.getElementById('loading-screen');
+    if (loadingScreen) {
+        loadingScreen.innerHTML = `
+            <div style="text-align: center; color: var(--color-critical);">
+                <p>Failed to load Attendance OS</p>
+                <p style="font-size: 0.9em;">${err.message}</p>
+                <button onclick="location.reload()" class="btn-primary" style="margin-top: 1rem;">Retry</button>
+            </div>
+        `;
     }
 });
 

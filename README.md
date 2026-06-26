@@ -190,7 +190,7 @@ Configure semester dates and lecture weeks in Settings:
 # 1. Create GitHub repo: highnine699/attendance-os
 # 2. Push all files except extension/ folder
 # 3. Settings → Pages → Source: main / root
-# 4. Access at: https://highnine699.github.io/attendance-os/
+# 4. Access at: https://highnine699-del.github.io/ATTENDANCE_TRACKER/
 ```
 
 **Note**: The extension must be loaded locally for now. Chrome Web Store deployment is planned for Phase 2+.
