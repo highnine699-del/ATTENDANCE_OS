@@ -1,3 +1,9 @@
+/**
+ * Attendance OS — Dashboard Module
+ * Copyright © 2025 Josiah. All rights reserved.
+ * Licensed under the MIT License.
+ */
+
 import { calculateWeightedAttendance, getCourseStatsSummary, calcCourseStats, calculatePercentage, calculateSafeSkips, getStatus, getStatusMeta } from '../engine.js';
 import { formatDateTime } from '../utils.js';
 import { icons } from '../icons.js';

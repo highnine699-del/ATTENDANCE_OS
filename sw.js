@@ -1,3 +1,9 @@
+/**
+ * Attendance OS — Service Worker (PWA Cache)
+ * Copyright © 2025 Josiah. All rights reserved.
+ * Licensed under the MIT License.
+ */
+
 const CACHE_VERSION = '2.0.2';
 const CACHE_NAME = `attendance-os-${CACHE_VERSION}`;
 const ASSETS = [

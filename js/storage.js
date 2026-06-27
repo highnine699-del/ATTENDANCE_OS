@@ -1,4 +1,8 @@
 /**
+ * Attendance OS — LocalStorage Management
+ * Copyright © 2025 Josiah. All rights reserved.
+ * Licensed under the MIT License.
+ *
  * localStorage abstraction layer with user isolation
  * Note: StateManager in state.js handles most persistence directly.
  * These functions are used by settings module for data export/import.

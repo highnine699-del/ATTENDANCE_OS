@@ -29,8 +29,6 @@
         },
         {
             "matches": [
-                "http://localhost:*/*",
-                "http://127.0.0.1:*/*",
                 "https://highnine699-del.github.io/ATTENDANCE_TRACKER/*"
             ],
             "js": [
@@ -41,8 +39,6 @@
     ],
     "externally_connectable": {
         "matches": [
-            "http://localhost:*/*",
-            "http://127.0.0.1:*/*",
             "https://highnine699-del.github.io/ATTENDANCE_TRACKER/*"
         ]
     }

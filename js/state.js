@@ -1,3 +1,9 @@
+/**
+ * Attendance OS — State Manager
+ * Copyright © 2025 Josiah. All rights reserved.
+ * Licensed under the MIT License.
+ */
+
 export class StateManager {
     constructor() {
         this.state = {

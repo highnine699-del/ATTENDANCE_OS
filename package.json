@@ -1,6 +1,6 @@
 {
   "name": "attendance-os",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Attendance tracking system for LMU students with Chrome extension sync",
   "main": "index.html",
   "scripts": {

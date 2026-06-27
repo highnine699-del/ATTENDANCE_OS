@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance OS</title>
+    <link rel="stylesheet" href="css/popup.css">
+</head>
+<body>
+    <div class="popup">
+        <header>
+            <h1>Attendance OS</h1>
+            <p class="subtitle">LMU Portal Sync</p>
+        </header>
+
+        <div class="stats-section">
+            <div class="overall-stat">
+                <span class="stat-label">Overall Attendance</span>
+                <span id="overall-pct" class="stat-value">—</span>
+            </div>
+            <div class="at-risk-section">
+                <span class="stat-label">Most At Risk</span>
+                <ul id="at-risk-list" class="at-risk-list">
+                    <li class="muted">No data synced yet</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="status-section">
+            <p id="status-text">Ready to sync</p>
+        </div>
+
+        <div class="actions">
+            <button id="scrape-btn" class="btn-primary">Sync Now</button>
+            <button id="open-webapp-btn" class="btn-secondary">Open App</button>
+        </div>
+
+        <div class="info">
+            <p>Make sure you're logged into att2.lmu.edu.ng</p>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

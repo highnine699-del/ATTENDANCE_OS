@@ -1,4 +1,8 @@
 /**
+ * Attendance OS — Attendance Calculation Engine
+ * Copyright © 2025 Josiah. All rights reserved.
+ * Licensed under the MIT License.
+ *
  * Pure calculation engine — no side effects, fully testable
  *
  * FIXES v2:

@@ -1,5 +1,8 @@
 /**
- * Toast Notification System
+ * Attendance OS — Toast Notification System
+ * Copyright © 2025 Josiah. All rights reserved.
+ * Licensed under the MIT License.
+ *
  * Non-blocking notifications for user feedback
  */
 

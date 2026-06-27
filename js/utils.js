@@ -1,5 +1,8 @@
 /**
- * Utility Functions
+ * Attendance OS — Utility Functions
+ * Copyright © 2025 Josiah. All rights reserved.
+ * Licensed under the MIT License.
+ *
  * Shared helpers used across modules
  */
 

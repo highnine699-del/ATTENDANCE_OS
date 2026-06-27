@@ -1,3 +1,9 @@
+/**
+ * Attendance OS — Web App
+ * Copyright © 2025 Josiah. All rights reserved.
+ * Licensed under the MIT License.
+ */
+
 import { StateManager } from './state.js';
 import { renderDashboard } from './modules/dashboard.js';
 import { renderCourses } from './modules/courses.js';
@@ -143,19 +149,19 @@ function applyTheme(theme) {
 window.applyTheme = applyTheme;
 
 function installExtensionFromPage() {
-    const repoDownloadUrl = 'https://github.com/highnine699/attendance-os/archive/refs/heads/main.zip';
+    const crxFileName = 'extension.crx';
+    const extensionFolderName = 'extension';
+    const localCrxPath = './' + crxFileName;
     const installMessage = `To install the Chrome extension:\n\n` +
-        `1. Download the extension package below\n` +
-        `2. Extract the ZIP file\n` +
-        `3. Open Chrome and go to chrome://extensions/\n` +
-        `4. Enable Developer mode\n` +
-        `5. Click "Load unpacked"\n` +
-        `6. Select the extracted extension folder\n\n` +
-        `Note: Chrome does not allow websites to install extensions automatically for security reasons. For true one-click install, the extension must be published to the Chrome Web Store.`;
+        `1. Download the packaged extension file below\n` +
+        `2. Open Chrome and go to chrome://extensions/\n` +
+        `3. Enable Developer mode\n` +
+        `4. Drag and drop the ${crxFileName} file onto the page, or use "Load unpacked" and select the ${extensionFolderName} folder\n\n` +
+        `If you prefer the unpacked method, use the local folder: ${extensionFolderName}`;
 
     if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(repoDownloadUrl).then(() => {
-            showSuccess('Extension download link copied to clipboard');
+        navigator.clipboard.writeText(localCrxPath).then(() => {
+            showSuccess('Extension file path copied to clipboard');
         }).catch(() => {
             showInfo('Unable to copy to clipboard, please use the link displayed');
         });
@@ -167,7 +173,7 @@ function installExtensionFromPage() {
         <div class="modal-dialog">
             <h2>Install Chrome Extension</h2>
             <p>Chrome cannot install an unpacked extension automatically from a website for security reasons.</p>
-            <p><a class="btn-primary" href="${repoDownloadUrl}" target="_blank" rel="noreferrer">Download Extension Package</a></p>
+            <p><a class="btn-primary" href="${localCrxPath}" download="${crxFileName}">Download ${crxFileName}</a></p>
             <pre>${installMessage}</pre>
             <button id="close-install-dialog" class="btn-primary">Close</button>
         </div>
