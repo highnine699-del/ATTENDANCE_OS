@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy — Attendance OS</title>
+    <style>
+        :root {
+            --bg: #0a1628;
+            --surface: #0d1f38;
+            --surface-raised: #112240;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-strong: rgba(255, 255, 255, 0.13);
+            --text-primary: #f0f6ff;
+            --text-secondary: #7a9bb5;
+            --text-muted: #3d5a70;
+            --accent: #10b981;
+            --accent-dim: rgba(16, 185, 129, 0.12);
+            --accent-border: rgba(16, 185, 129, 0.30);
+            --danger: #ef4444;
+            --danger-dim: rgba(239, 68, 68, 0.10);
+            --danger-border: rgba(239, 68, 68, 0.28);
+            --radius: 10px;
+            --radius-sm: 6px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            font-size: 15.5px;
+            line-height: 1.75;
+            min-height: 100vh;
+        }
+
+        /* ── Header ──────────────────────────────────────────── */
+        header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 22px 0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            backdrop-filter: blur(12px);
+        }
+
+        .header-inner {
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 0 28px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, var(--accent), #059669);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+            box-shadow: 0 0 16px rgba(16,185,129,0.35);
+        }
+
+        .header-text h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+
+        .header-text p {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        /* ── Layout ──────────────────────────────────────────── */
+        .layout {
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 44px 28px 88px;
+        }
+
+        /* ── Meta bar ────────────────────────────────────────── */
+        .meta-bar {
+            background: var(--accent-dim);
+            border: 1px solid var(--accent-border);
+            border-radius: var(--radius);
+            padding: 14px 20px;
+            margin-bottom: 40px;
+            display: flex;
+            gap: 28px;
+            flex-wrap: wrap;
+        }
+
+        .meta-bar span {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+        }
+
+        .meta-bar strong {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* ── Section headings ────────────────────────────────── */
+        h2 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 40px 0 12px;
+            padding-bottom: 9px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        h2:first-of-type { margin-top: 0; }
+
+        h2 .num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            background: var(--accent-dim);
+            border: 1px solid var(--accent-border);
+            border-radius: 50%;
+            font-size: 0.72rem;
+            color: var(--accent);
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        /* ── Body text ───────────────────────────────────────── */
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        ul, ol {
+            color: var(--text-secondary);
+            padding-left: 22px;
+            margin-bottom: 12px;
+        }
+
+        ul li, ol li { margin-bottom: 5px; }
+
+        strong { color: var(--text-primary); font-weight: 600; }
+
+        code {
+            font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+            font-size: 0.83em;
+            background: var(--surface-raised);
+            border: 1px solid var(--border-strong);
+            border-radius: 4px;
+            padding: 1px 5px;
+            color: var(--accent);
+        }
+
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* ── Callout boxes ───────────────────────────────────── */
+        .callout {
+            border-radius: var(--radius);
+            padding: 14px 18px;
+            margin: 16px 0;
+            border-left-width: 3px;
+            border-left-style: solid;
+        }
+
+        .callout p { margin: 0; }
+
+        .callout-green {
+            background: var(--accent-dim);
+            border-color: var(--accent);
+            border: 1px solid var(--accent-border);
+            border-left: 3px solid var(--accent);
+        }
+
+        .callout-green p { color: #6ee7b7; }
+
+        .callout-red {
+            background: var(--danger-dim);
+            border: 1px solid var(--danger-border);
+            border-left: 3px solid var(--danger);
+        }
+
+        .callout-red p { color: #fca5a5; }
+
+        /* ── Tables ──────────────────────────────────────────── */
+        .table-wrap { overflow-x: auto; margin: 16px 0 24px; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            min-width: 480px;
+        }
+
+        th {
+            text-align: left;
+            padding: 10px 14px;
+            background: var(--surface-raised);
+            color: var(--text-secondary);
+            font-weight: 600;
+            border: 1px solid var(--border);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        td {
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            vertical-align: top;
+        }
+
+        td:first-child { color: var(--text-primary); font-weight: 500; }
+
+        tr:hover td { background: rgba(255,255,255,0.015); }
+
+        /* ── Tag pills ───────────────────────────────────────── */
+        .tag {
+            display: inline-block;
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 999px;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+
+        .tag-yes { background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent-border); }
+        .tag-no  { background: var(--danger-dim);  color: #fca5a5;      border: 1px solid var(--danger-border); }
+
+        /* ── Contact card ────────────────────────────────────── */
+        .contact-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            margin-top: 10px;
+        }
+
+        .contact-card p { margin: 0 0 7px; }
+        .contact-card p:last-child { margin: 0; }
+
+        /* ── Footer ──────────────────────────────────────────── */
+        footer {
+            text-align: center;
+            padding: 32px 28px;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.82rem;
+        }
+
+        footer p + p { margin-top: 4px; }
+
+        /* ── Responsive ──────────────────────────────────────── */
+        @media (max-width: 560px) {
+            .layout { padding: 32px 18px 64px; }
+            .meta-bar { gap: 10px; flex-direction: column; }
+            .header-inner { padding: 0 18px; }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="header-inner">
+        <div class="logo">📋</div>
+        <div class="header-text">
+            <h1>Attendance OS — Privacy Policy</h1>
+            <p>Chrome Extension · Version 1.1.0</p>
+        </div>
+    </div>
+</header>
+
+<div class="layout">
+
+    <div class="meta-bar">
+        <span><strong>Effective:</strong> 28 June 2026</span>
+        <span><strong>Last updated:</strong> 29 June 2026</span>
+        <span><strong>Version covered:</strong> 1.1.0</span>
+        <span><strong>License:</strong> MIT (open source)</span>
+    </div>
+
+    <!-- 1 -->
+    <h2><span class="num">1</span> What is Attendance OS?</h2>
+    <p>
+        Attendance OS is a Chrome extension and companion web app that reads your attendance data from
+        the Landmark University (LMU) student portal
+        (<a href="https://att2.lmu.edu.ng" target="_blank" rel="noopener">att2.lmu.edu.ng</a>)
+        and displays it in a local dashboard with skip calculators, recovery planning, and analytics.
+        It is an independent, open-source student project and is not affiliated with
+        or endorsed by Landmark University.
+    </p>
+
+    <div class="callout callout-green">
+        <p>✅ <strong>All data this extension touches stays on your device.</strong>
+        It is never transmitted to any external server, cloud service, or third party —
+        not even to the developer.</p>
+    </div>
+
+    <!-- 2 -->
+    <h2><span class="num">2</span> What data is collected and when</h2>
+    <p>
+        The extension operates two content scripts. The table below describes exactly what each one
+        reads and when it runs.
+    </p>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Script</th>
+                    <th>Runs on</th>
+                    <th>When it activates</th>
+                    <th>What it reads</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>content-scraper.js</code></td>
+                    <td><code>att2.lmu.edu.ng</code></td>
+                    <td>
+                        <strong>Automatically on page load</strong> (if the attendance table is
+                        present), and again when you click <em>Sync Now</em> in the popup.
+                    </td>
+                    <td>The attendance table rows — see field list below.</td>
+                </tr>
+                <tr>
+                    <td><code>webapp-bridge.js</code></td>
+                    <td><code>highnine699-del.github.io/<br>ATTENDANCE_TRACKER/</code></td>
+                    <td>On page load, only when the web app is open. Responds to
+                        <code>postMessage</code> requests from the web app to relay
+                        already-stored data. Does not read any page content.</td>
+                    <td>Nothing from the page. Only relays data already held in
+                        <code>chrome.storage.local</code>.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>
+        The following fields are extracted from the LMU portal attendance table:
+    </p>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Field</th>
+                    <th>Table column</th>
+                    <th>Purpose</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Course code</td>
+                    <td>Column 2 (e.g. <code>EEE102</code>)</td>
+                    <td>Identifies which course the record belongs to</td>
+                </tr>
+                <tr>
+                    <td>Credit units</td>
+                    <td>Column 3 (e.g. <code>2CC</code>)</td>
+                    <td>Used to compute unit-weighted attendance averages</td>
+                </tr>
+                <tr>
+                    <td>Total classes held</td>
+                    <td>Column 5</td>
+                    <td>Denominator for all attendance calculations</td>
+                </tr>
+                <tr>
+                    <td>Classes attended</td>
+                    <td>Column 6</td>
+                    <td>Numerator for all attendance calculations</td>
+                </tr>
+                <tr>
+                    <td>Classes suppressed</td>
+                    <td>Column 7</td>
+                    <td>Informational — displayed alongside attendance counts</td>
+                </tr>
+                <tr>
+                    <td>Attendance percentage</td>
+                    <td>Column 8</td>
+                    <td>Portal-computed value displayed in the dashboard</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="callout callout-red">
+        <p>❌ <strong>We do not collect:</strong> your name, student ID, matric number, password,
+        session cookies, email address, IP address, device identifiers, location, biometrics,
+        or any information beyond the six numeric attendance fields listed above.</p>
+    </div>
+
+    <!-- 3 -->
+    <h2><span class="num">3</span> How data is stored</h2>
+    <p>
+        Scraped attendance data is saved to <code>chrome.storage.local</code> under the key
+        <code>attendanceData</code>. This is a sandboxed browser storage area that:
+    </p>
+    <ul>
+        <li>exists only on your device;</li>
+        <li>is not synced to Google servers or any cloud service;</li>
+        <li>is readable only by the Attendance OS extension and the Attendance OS web app
+            running in the same browser.</li>
+    </ul>
+    <p>
+        User preferences (theme, pass threshold, optional display name) entered in the web
+        app's Settings page are stored separately in <code>localStorage</code> under the key
+        <code>attendanceOS_state_&lt;userId&gt;</code>, where <code>&lt;userId&gt;</code> is a
+        randomly generated local identifier that is never sent anywhere.
+    </p>
+
+    <!-- 4 -->
+    <h2><span class="num">4</span> How data is used</h2>
+    <p>Collected attendance figures are used exclusively to:</p>
+    <ul>
+        <li>display per-course attendance percentages and status badges in the dashboard;</li>
+        <li>calculate how many future classes can be safely skipped while staying above threshold;</li>
+        <li>generate recovery plans (how many consecutive classes to attend to return to safe zone);</li>
+        <li>produce semester-end projections in the Analytics tab;</li>
+        <li>show the at-risk course count as a badge on the extension icon.</li>
+    </ul>
+    <p>
+        Data is never used for advertising, profiling, tracking, or any purpose other than
+        the attendance-related features listed above.
+    </p>
+
+    <!-- 5 -->
+    <h2><span class="num">5</span> Data sharing and third parties</h2>
+
+    <div class="callout callout-green">
+        <p>✅ <strong>We share your data with no one.</strong> There are no analytics SDKs,
+        advertising networks, crash-reporting services, or backend servers involved.</p>
+    </div>
+
+    <p>The only data flows in the entire system are:</p>
+    <ul>
+        <li>
+            <strong>att2.lmu.edu.ng → extension (local):</strong> The scraper reads the page
+            you have already opened. The extension does not log in on your behalf or fetch
+            pages independently.
+        </li>
+        <li>
+            <strong>Extension → web app (local):</strong> Stored attendance data is passed
+            over <code>window.postMessage</code> to the Attendance OS web app running in
+            the same browser session. This message never leaves your machine. The bridge
+            script validates the message origin and refuses to relay data to any unrecognised
+            or insecure origin.
+        </li>
+    </ul>
+
+    <!-- 6 -->
+    <h2><span class="num">6</span> Permissions declared</h2>
+    <p>
+        The Chrome Web Store build of Attendance OS declares exactly the following permissions.
+        No others are requested.
+    </p>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Permission</th>
+                    <th>Scope</th>
+                    <th>Justification</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>storage</code></td>
+                    <td>API permission</td>
+                    <td>Saves attendance data to <code>chrome.storage.local</code> on your device.
+                        No sync storage is used.</td>
+                </tr>
+                <tr>
+                    <td><code>tabs</code></td>
+                    <td>API permission</td>
+                    <td>Detects whether you have the LMU portal tab open and retrieves its
+                        tab ID so the scraper can be triggered on the correct tab. Tab URLs
+                        are checked but never stored or transmitted.</td>
+                </tr>
+                <tr>
+                    <td>Host: <code>att2.lmu.edu.ng/*</code></td>
+                    <td>Host permission</td>
+                    <td>Allows <code>content-scraper.js</code> to run on the LMU portal and
+                        read the attendance table. Required for the core sync feature.</td>
+                </tr>
+                <tr>
+                    <td>Content script on <code>highnine699-del.github.io/ATTENDANCE_TRACKER/*</code></td>
+                    <td>Content script (not a host permission)</td>
+                    <td>Injects <code>webapp-bridge.js</code> into the Attendance OS web app
+                        so it can receive locally stored attendance data from the extension via
+                        <code>postMessage</code>. The script reads no page content.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>
+        No remote code is loaded or executed. All JavaScript is bundled inside the extension
+        package at install time.
+    </p>
+
+    <!-- 7 -->
+    <h2><span class="num">7</span> Security measures</h2>
+    <ul>
+        <li>
+            <strong>Origin validation:</strong> <code>webapp-bridge.js</code> validates
+            <code>window.location.origin</code> at startup and disables itself entirely if
+            the page is served from an insecure or unrecognised origin. It also rejects any
+            incoming <code>postMessage</code> that does not match the expected origin.
+        </li>
+        <li>
+            <strong>Tab URL validation:</strong> Before injecting a scrape command,
+            <code>background.js</code> checks that the target tab's URL starts with
+            <code>https://att2.lmu.edu.ng/</code> and that the tab has fully loaded.
+            It retries up to 8 times (500 ms apart) before giving up, with a hard 15-second
+            timeout.
+        </li>
+        <li>
+            <strong>No eval / remote code:</strong> The extension contains no
+            <code>eval()</code>, <code>innerHTML</code> assignments, or dynamically
+            fetched scripts.
+        </li>
+    </ul>
+
+    <!-- 8 -->
+    <h2><span class="num">8</span> Children's privacy</h2>
+    <p>
+        Attendance OS is designed for university students aged 18 and above.
+        We do not knowingly collect data from users under 13. If you believe a minor
+        has used this extension, contact us using the details in Section 10 and we will
+        help with data removal.
+    </p>
+
+    <!-- 9 -->
+    <h2><span class="num">9</span> Your data controls</h2>
+    <p>You have complete control over your data at all times:</p>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>How to do it</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>View all stored data</td>
+                    <td>All data is visible in the Attendance OS web app dashboard and course list.</td>
+                </tr>
+                <tr>
+                    <td>Export a copy</td>
+                    <td>Web app → Settings → <em>Export JSON</em> or <em>Export CSV</em>.</td>
+                </tr>
+                <tr>
+                    <td>Delete all data</td>
+                    <td>Web app → Settings → <em>Reset All Data</em>. Permanently erases all
+                        stored attendance records and preferences.</td>
+                </tr>
+                <tr>
+                    <td>Remove extension data</td>
+                    <td>Uninstalling the extension from Chrome automatically clears
+                        <code>chrome.storage.local</code>.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 10 -->
+    <h2><span class="num">10</span> Open source</h2>
+    <p>
+        Attendance OS is released under the
+        <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener">MIT License</a>.
+        The full source code is publicly available and can be audited at:
+    </p>
+    <p>
+        <a href="https://github.com/highnine699-del/attendance-os" target="_blank" rel="noopener">
+            github.com/highnine699-del/attendance-os
+        </a>
+    </p>
+
+    <!-- 11 -->
+    <h2><span class="num">11</span> Changes to this policy</h2>
+    <p>
+        If this policy is updated, the <strong>Last updated</strong> date at the top of this
+        page will change. Material changes — ones that affect how data is collected or used —
+        will also be noted in the Chrome Web Store listing update notes. Continued use of the
+        extension after a change is posted constitutes acceptance of the revised policy.
+    </p>
+
+    <!-- 12 -->
+    <h2><span class="num">12</span> Contact</h2>
+    <p>For questions, data removal requests, or concerns about this privacy policy:</p>
+    <div class="contact-card">
+        <p><strong>Developer:</strong> Josiah Odetayo (independent student developer)</p>
+        <p><strong>Email:</strong>
+            <a href="mailto:highnine699@gmail.com">highnine699@gmail.com</a>
+        </p>
+        <p><strong>Source code & issues:</strong>
+            <a href="https://github.com/highnine699-del/attendance-os" target="_blank" rel="noopener">
+                github.com/highnine699-del/attendance-os
+            </a>
+        </p>
+    </div>
+
+</div>
+
+<footer>
+    <p>Attendance OS is an independent open-source project and is not affiliated with Landmark University.</p>
+    <p>© 2026 Josiah Odetayo — Released under the MIT License.</p>
+</footer>
+
+</body>
+</html>
