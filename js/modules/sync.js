@@ -75,14 +75,21 @@ export function renderSync(state, container) {
             
             <div class="sync-section">
                 <h3>${icons.progress} Sync from Extension</h3>
-                <p>Click below to import your latest attendance from the LMU portal (att2.lmu.edu.ng).</p>
+                <p>Click below to import your latest attendance from the LMU portal (att3.lmu.edu.ng) via the Chrome extension.</p>
                 <button id="sync-extension-btn" class="btn-primary">Sync from Extension</button>
                 <p id="sync-status" class="sync-message"></p>
             </div>
 
             <div class="sync-section">
+                <h3>${icons.cloud} Sync from Cloud</h3>
+                <p>Fetch attendance data from GitHub-hosted JSON (updated automatically). Use this on mobile or without the extension.</p>
+                <button id="sync-cloud-btn" class="btn-secondary">Sync from Cloud</button>
+                <p id="cloud-sync-status" class="sync-message"></p>
+            </div>
+
+            <div class="sync-section">
                 <h3>${icons.clipboard} Paste from Portal</h3>
-                <p>Copy the attendance table from att2.lmu.edu.ng and paste it below.</p>
+                <p>Copy the attendance table from att3.lmu.edu.ng and paste it below.</p>
                 <textarea id="portal-paste" rows="10" placeholder="Paste the attendance table here...
 Example:
 SN	COURSE	UNITS	LECTURE_WEEKS	TOTAL_CLASS	NO_ATTENDED	NO_SUPPRESSED	PERCENTAGE	APPROVAL
@@ -149,9 +156,36 @@ SN	COURSE	UNITS	LECTURE_WEEKS	TOTAL_CLASS	NO_ATTENDED	NO_SUPPRESSED	PERCENTAGE	A
             msg.classList.add('success');
             showSuccess(`Synced ${result.coursesUpdated} courses`);
         } else {
-            msg.innerHTML = `${icons.x} Sync failed: ${result.error}<br><small>Use Paste from Portal or Manual Entry below as a fallback.</small>`;
+            msg.innerHTML = `${icons.x} Sync failed: ${result.error}<br><small>Use Sync from Cloud or Paste from Portal below as a fallback.</small>`;
             msg.classList.add('error');
             showError(`Sync failed: ${result.error}`);
+        }
+    });
+
+    document.getElementById('sync-cloud-btn').addEventListener('click', async () => {
+        const btn = document.getElementById('sync-cloud-btn');
+        const msg = document.getElementById('cloud-sync-status');
+        const originalText = btn.textContent;
+
+        btn.innerHTML = '<span class="spinner"></span>';
+        btn.classList.add('btn-loading');
+        msg.textContent = 'Syncing...';
+        msg.classList.remove('success', 'error');
+
+        const result = await state.syncFromCloud();
+
+        btn.innerHTML = originalText;
+        btn.classList.remove('btn-loading');
+
+        if (result.success) {
+            const timeAgo = result.lastUpdated ? ` (updated ${new Date(result.lastUpdated).toLocaleString()})` : '';
+            msg.innerHTML = `${icons.check} Synced ${result.coursesUpdated} courses from cloud${timeAgo}`;
+            msg.classList.add('success');
+            showSuccess(`Synced ${result.coursesUpdated} courses from cloud`);
+        } else {
+            msg.innerHTML = `${icons.x} Cloud sync failed: ${result.error}<br><small>Use Paste from Portal or Manual Entry below as a fallback.</small>`;
+            msg.classList.add('error');
+            showError(`Cloud sync failed: ${result.error}`);
         }
     });
 

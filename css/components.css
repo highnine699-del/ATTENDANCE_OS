@@ -1181,6 +1181,38 @@ button:disabled {
     min-width: 180px;
 }
 
+/* ── Sync source badge ─────────────────────────────────────────── */
+.sync-source-badge {
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    margin-bottom: var(--space-sm);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.sync-source-badge.extension {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--color-very-safe);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.sync-source-badge.cloud {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.sync-source-badge.none {
+    background: var(--glass-1);
+    color: var(--text-muted);
+    border: 1px solid var(--border-dim);
+}
+
 /* ── Alert banner ─────────────────────────────────────────────── */
 .alert-banner {
     background: var(--glass-2);

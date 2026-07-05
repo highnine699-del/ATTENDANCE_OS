@@ -79,6 +79,7 @@ state.init().then(() => {
 
     updateUserDisplay();
     updateLastSyncDisplay();
+    updateSyncSourceBadge();
     switchModule('dashboard');
 
     // Auto-sync on load if enabled
@@ -121,7 +122,7 @@ async function triggerQuickSync(showToast = true) {
 document.getElementById('quick-sync')?.addEventListener('click', () => triggerQuickSync(true));
 
 document.getElementById('install-extension-btn')?.addEventListener('click', () => {
-    installExtensionFromPage();
+    window.open('https://chromewebstore.google.com/detail/injaeehdocekbedpcdjhinjhkfldogfm/', '_blank', 'noopener');
 });
 
 window.addEventListener('open-extension-install', () => {
@@ -196,4 +197,38 @@ function updateLastSyncDisplay() {
     const el = document.getElementById('last-sync');
     const last = state.getLastSync(); // FIX: was state.state.lastSync
     if (el) el.textContent = last ? `Last sync: ${new Date(last).toLocaleString()}` : 'Last sync: never';
+}
+
+function updateSyncSourceBadge() {
+    const badge = document.getElementById('sync-source-badge');
+    if (!badge) return;
+
+    // Check if extension is available
+    const pingId = `attendance_check_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    window.postMessage({ type: 'ATTENDANCE_OS_BRIDGE_PING', requestId: pingId }, '*');
+
+    let resolved = false;
+    const timeout = setTimeout(() => {
+        if (!resolved) {
+            resolved = true;
+            // Extension not available, show cloud badge
+            badge.className = 'sync-source-badge cloud';
+            badge.textContent = '☁️ Cloud Sync';
+        }
+    }, 500);
+
+    const handler = (e) => {
+        if (e.source !== window) return;
+        if (e.data?.type === 'ATTENDANCE_OS_BRIDGE_READY' && e.data.requestId === pingId) {
+            if (!resolved) {
+                resolved = true;
+                clearTimeout(timeout);
+                window.removeEventListener('message', handler);
+                badge.className = 'sync-source-badge extension';
+                badge.textContent = '⚡ Extension';
+            }
+        }
+    };
+
+    window.addEventListener('message', handler);
 }

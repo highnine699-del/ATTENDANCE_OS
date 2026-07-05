@@ -258,6 +258,48 @@ export class StateManager {
         throw new Error('No course data received from extension.');
     }
 
+    async syncFromCloud() {
+        if (this.isSyncing) {
+            return { success: false, error: 'Sync already in progress. Please wait...' };
+        }
+
+        this.isSyncing = true;
+
+        try {
+            const res = await fetch('/attendance.json', { cache: 'no-store' });
+            if (!res.ok) {
+                throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+            }
+            const data = await res.json();
+
+            if (data && Array.isArray(data.courses)) {
+                let updated = 0;
+                data.courses.forEach(ec => {
+                    if (this.getCourse(ec.courseCode)) {
+                        this.updateCourse(ec.courseCode, {
+                            attended: ec.attended, suppressed: ec.suppressed,
+                            percentage: ec.percentage, totalClasses: ec.totalClasses,
+                            syncSource: 'cloud'
+                        }, { notify: false });
+                        updated++;
+                    }
+                });
+                if (data.semesterInfo) {
+                    this.updateSemesterInfo(data.semesterInfo);
+                }
+                this.persist();
+                this.notify();
+                this.recordSync('cloud', updated);
+                return { success: true, coursesUpdated: updated, lastUpdated: data.lastUpdated };
+            }
+            throw new Error('No course data received from cloud.');
+        } catch (err) {
+            return { success: false, error: err.message };
+        } finally {
+            this.isSyncing = false;
+        }
+    }
+
     cancelSync() {
         if (this.syncAbortController) {
             this.syncAbortController.abort();

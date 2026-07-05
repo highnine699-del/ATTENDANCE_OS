@@ -1,0 +1,38 @@
+name: Scrape Attendance
+
+on:
+  schedule:
+    # 5x/day during class hours (WAT = UTC+1)
+    # 6am WAT = 5am UTC, 9am WAT = 8am UTC, 12pm WAT = 11am UTC
+    # 3pm WAT = 2pm UTC, 6pm WAT = 5pm UTC
+    - cron: '0 5,8,11,14,17 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install dependencies
+        run: pip install -r scraper/requirements.txt
+      
+      - name: Run scraper
+        env:
+          PORTAL_USERNAME: ${{ secrets.PORTAL_USERNAME }}
+          PORTAL_PASSWORD: ${{ secrets.PORTAL_PASSWORD }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scraper/scrape.py
+      
+      - name: Commit updated attendance.json
+        run: |
+          git config user.name "attendance-bot"
+          git config user.email "actions@github.com"
+          git add attendance.json
+          git diff --staged --quiet || git commit -m "chore: update attendance data [skip ci]"
+          git push

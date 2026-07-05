@@ -20,6 +20,14 @@ npm-debug.log*
 # Environment files
 .env
 .env.local
+scraper/.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
 
 # Build outputs
 dist/

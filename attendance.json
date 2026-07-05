@@ -1,0 +1,136 @@
+{
+  "lastUpdated": "2026-07-01T10:00:00Z",
+  "courses": [
+    {
+      "courseCode": "ITE121",
+      "units": 0,
+      "totalClasses": 13,
+      "attended": 10,
+      "suppressed": 0,
+      "percentage": 77
+    },
+    {
+      "courseCode": "LMU-PHY104",
+      "units": 2,
+      "totalClasses": 13,
+      "attended": 11,
+      "suppressed": 0,
+      "percentage": 85
+    },
+    {
+      "courseCode": "CHM102",
+      "units": 2,
+      "totalClasses": 13,
+      "attended": 9,
+      "suppressed": 0,
+      "percentage": 69
+    },
+    {
+      "courseCode": "CHM108",
+      "units": 1,
+      "totalClasses": 13,
+      "attended": 12,
+      "suppressed": 0,
+      "percentage": 92
+    },
+    {
+      "courseCode": "EEE102",
+      "units": 2,
+      "totalClasses": 13,
+      "attended": 10,
+      "suppressed": 0,
+      "percentage": 77
+    },
+    {
+      "courseCode": "GET102",
+      "units": 2,
+      "totalClasses": 13,
+      "attended": 11,
+      "suppressed": 0,
+      "percentage": 85
+    },
+    {
+      "courseCode": "GST112",
+      "units": 2,
+      "totalClasses": 13,
+      "attended": 12,
+      "suppressed": 0,
+      "percentage": 92
+    },
+    {
+      "courseCode": "LMU-CFR121",
+      "units": 1,
+      "totalClasses": 13,
+      "attended": 10,
+      "suppressed": 0,
+      "percentage": 77
+    },
+    {
+      "courseCode": "LMU-STA112",
+      "units": 3,
+      "totalClasses": 13,
+      "attended": 9,
+      "suppressed": 0,
+      "percentage": 69
+    },
+    {
+      "courseCode": "LMU-TMC121",
+      "units": 1,
+      "totalClasses": 13,
+      "attended": 13,
+      "suppressed": 0,
+      "percentage": 100
+    },
+    {
+      "courseCode": "MTH102",
+      "units": 2,
+      "totalClasses": 13,
+      "attended": 11,
+      "suppressed": 0,
+      "percentage": 85
+    },
+    {
+      "courseCode": "PHY102",
+      "units": 2,
+      "totalClasses": 13,
+      "attended": 10,
+      "suppressed": 0,
+      "percentage": 77
+    },
+    {
+      "courseCode": "PHY108",
+      "units": 1,
+      "totalClasses": 13,
+      "attended": 12,
+      "suppressed": 0,
+      "percentage": 92
+    },
+    {
+      "courseCode": "LMU-EDS121",
+      "units": 1,
+      "totalClasses": 13,
+      "attended": 11,
+      "suppressed": 0,
+      "percentage": 85
+    },
+    {
+      "courseCode": "LMU-TMC112",
+      "units": 0,
+      "totalClasses": 13,
+      "attended": 13,
+      "suppressed": 0,
+      "percentage": 100
+    },
+    {
+      "courseCode": "ADC121",
+      "units": 1,
+      "totalClasses": 13,
+      "attended": 10,
+      "suppressed": 0,
+      "percentage": 77
+    }
+  ],
+  "semesterInfo": {
+    "lectureWeeks": 13
+  }
+}
