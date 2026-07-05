@@ -38,7 +38,7 @@ Attendance OS is a modular vanilla JavaScript application with a Chrome extensio
 #### Extension Components
 - `manifest.json`: MV3 manifest with permissions
 - `background.js`: Service worker for message handling
-- `content-scraper.js`: Content script for att2.lmu.edu.ng
+- `content-scraper.js`: Content script for att3.lmu.edu.ng
 - `popup.html`: Extension popup UI
 - `popup.js`: Popup logic and user interactions
 
@@ -64,7 +64,7 @@ Attendance OS is a modular vanilla JavaScript application with a Chrome extensio
          │ DOM scraping
          ▼
 ┌─────────────────┐
-│ att2.lmu.edu.ng │
+│ att3.lmu.edu.ng │
 │   (Portal)      │
 └─────────────────┘
 ```
@@ -73,7 +73,7 @@ Attendance OS is a modular vanilla JavaScript application with a Chrome extensio
 
 ### Sync Flow (Extension → Web App)
 
-1. User opens extension popup on att2.lmu.edu.ng
+1. User opens extension popup on att3.lmu.edu.ng
 2. Popup triggers scrape via background service worker
 3. Background worker injects content script
 4. Content script scrapes attendance table from DOM
@@ -249,7 +249,7 @@ try {
 
 ### Content Security
 
-- Extension only accesses att2.lmu.edu.ng
+- Extension only accesses att3.lmu.edu.ng
 - No inline scripts in extension
 - Minimal permissions (storage, tabs)
 

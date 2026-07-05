@@ -7,7 +7,7 @@ A web application and Chrome extension for Landmark University students to track
 - **Dashboard**: Overall attendance health with per-course breakdown
 - **Course Manager**: Add, edit, and delete courses
 - **Smart Calculator**: Calculate safe skips and recovery plans
-- **Portal Sync**: Chrome extension auto-extracts data from att2.lmu.edu.ng
+- **Portal Sync**: Chrome extension auto-extracts data from att3.lmu.edu.ng
 - **Manual Entry**: Fallback form for manual attendance updates
 - **Alert System**: Visual warnings for courses below 75% threshold
 - **Data Persistence**: localStorage with export/import functionality
@@ -43,7 +43,7 @@ python -m http.server 8080
 
 ### Sync Attendance
 
-1. Login to att2.lmu.edu.ng in Chrome
+1. Login to att3.lmu.edu.ng in Chrome
 2. Click the Attendance OS extension icon
 3. Click "Scrape Attendance"
 4. Open the web app (http://localhost:8080)
@@ -214,7 +214,7 @@ The app is deployed at: **https://highnine699-del.github.io/ATTENDANCE_TRACKER/*
 
 - All data stored locally in your browser
 - No external servers or cloud storage
-- Extension only accesses att2.lmu.edu.ng
+- Extension only accesses att3.lmu.edu.ng
 - No tracking or analytics
 
 ## 🐛 Troubleshooting
@@ -231,7 +231,7 @@ The app is deployed at: **https://highnine699-del.github.io/ATTENDANCE_TRACKER/*
 
 ### Extension not syncing
 
-- Ensure you're logged into att2.lmu.edu.ng
+- Ensure you're logged into att3.lmu.edu.ng
 - Check that the extension has proper permissions (`extension/manifest.json`)
 - Check browser console for error messages (press F12)
 - Try reloading the extension (`chrome://extensions/` → reload button)
@@ -253,7 +253,7 @@ The app is deployed at: **https://highnine699-del.github.io/ATTENDANCE_TRACKER/*
 
 ### Portal table parsing fails
 
-- The extension auto-scrapes the attendance table on att2.lmu.edu.ng
+- The extension auto-scrapes the attendance table on att3.lmu.edu.ng
 - If scraping fails, use **Manual Entry** in the Sync tab
 - Paste attendance data in the format shown in the tab
 - Headers are case-insensitive (CODE, code, Code all work)

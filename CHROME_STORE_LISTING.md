@@ -13,7 +13,7 @@ Auto-sync your LMU attendance from the portal and track your semester progress.
 **Attendance OS** is a productivity extension for LMU students that automates attendance tracking and planning.
 
 **Core Features:**
-- **Auto-Sync:** One-click sync from the LMU attendance portal (att2.lmu.edu.ng) directly into your dashboard
+- **Auto-Sync:** One-click sync from the LMU attendance portal (att3.lmu.edu.ng) directly into your dashboard
 - **Safe Skip Calculator:** Know exactly how many classes you can skip and still maintain your target percentage
 - **Recovery Planning:** Get real-time feedback on what attendance rate you need to recover if below threshold
 - **Weighted GPA Tracking:** Monitor your overall attendance health across all courses with unit-weighted averaging
@@ -78,7 +78,7 @@ The `storage` permission is used exclusively to persist user attendance data, co
 
 The `tabs` permission allows the extension to interact with open browser tabs when the user initiates a sync from the LMU attendance portal. This enables the extension to detect the portal tab and inject the scraper script to extract attendance data.
 
-### Host Permission Justification (att2.lmu.edu.ng)
+### Host Permission Justification (att3.lmu.edu.ng)
 
 This host permission is required to inject a content script into the LMU attendance portal that scrapes the attendance table. The script runs only when the user clicks "Sync Now" and extracts attendance data (course codes, units, attendance percentages) which is then sent back to the extension for local storage.
 
@@ -127,7 +127,7 @@ No login required.
    - Verify the popup displays without console errors
 
 2. **Test Auto-Sync (Requires LMU Portal Access):**
-   - Open https://att2.lmu.edu.ng in a new tab
+   - Open https://att3.lmu.edu.ng in a new tab
    - Log in with your LMU credentials
    - Navigate to the attendance page
    - Return to the extension popup and click "Scrape Now"

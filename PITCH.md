@@ -9,7 +9,7 @@ Landmark University students struggle with:
 - **Manual attendance tracking** - No centralized way to monitor attendance across all courses
 - **Uncertainty about standing** - Students don't know if they're at risk of failing attendance requirements
 - **Poor planning** - No way to calculate safe skips or recovery strategies
-- **Portal dependency** - Must login to att2.lmu.edu.ng repeatedly to check status
+- **Portal dependency** - Must login to att3.lmu.edu.ng repeatedly to check status
 - **Data fragmentation** - Attendance data scattered across multiple systems
 
 **Impact**: Students risk failing courses due to attendance, leading to academic setbacks and financial loss.
@@ -50,7 +50,7 @@ A comprehensive attendance management system with **web application + Chrome ext
 ### 4. **Multi-Method Data Sync**
 
 #### A. Chrome Extension (Automated)
-- One-click scraping from att2.lmu.edu.ng
+- One-click scraping from att3.lmu.edu.ng
 - Auto-extracts attendance table
 - Background processing
 - Popup interface for quick sync
@@ -230,7 +230,7 @@ Feature Modules:
 
 - **Local-First**: All data stored in user's browser
 - **No Cloud Servers**: No external data transmission
-- **Portal-Only**: Extension only accesses att2.lmu.edu.ng
+- **Portal-Only**: Extension only accesses att3.lmu.edu.ng
 - **No Tracking**: No analytics or user monitoring
 - **Open Source**: Transparent codebase
 - **User Control**: Export/delete data anytime

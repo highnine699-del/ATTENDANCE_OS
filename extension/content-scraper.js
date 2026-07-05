@@ -5,7 +5,7 @@
  */
 
 /**
- * Content script: runs on att2.lmu.edu.ng, scrapes the attendance table
+ * Content script: runs on att3.lmu.edu.ng, scrapes the attendance table
  */
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {

@@ -8,7 +8,7 @@
         "tabs"
     ],
     "host_permissions": [
-        "https://att2.lmu.edu.ng/*"
+        "https://att3.lmu.edu.ng/*"
     ],
     "background": {
         "service_worker": "background.js"
@@ -20,7 +20,7 @@
     "content_scripts": [
         {
             "matches": [
-                "https://att2.lmu.edu.ng/*"
+                "https://att3.lmu.edu.ng/*"
             ],
             "js": [
                 "content-scraper.js"

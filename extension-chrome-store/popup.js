@@ -178,11 +178,11 @@ document.addEventListener('DOMContentLoaded', () => {
         scrapeBtn.disabled = true;
 
         try {
-            const tabs = await chromeTabsQuery({ url: 'https://att2.lmu.edu.ng/*' });
+            const tabs = await chromeTabsQuery({ url: 'https://att3.lmu.edu.ng/*' });
 
             if (tabs.length === 0) {
                 statusText.textContent = 'Opening LMU portal...';
-                await chromeTabsCreate({ url: 'https://att2.lmu.edu.ng' });
+                await chromeTabsCreate({ url: 'https://att3.lmu.edu.ng' });
                 statusText.textContent = 'Please login, then click Sync Now again';
                 return;
             }

@@ -136,7 +136,7 @@ Show number of courses at risk on extension badge.
 - **Effort**: Low (1 hour)
 
 ### 16. **Auto-Scrape on Page Load** ⭐⭐
-Automatically scrape when user visits att2.lmu.edu.ng.
+Automatically scrape when user visits att3.lmu.edu.ng.
 - Detect attendance page
 - Auto-scrape in background
 - Show notification

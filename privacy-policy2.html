@@ -303,7 +303,7 @@
     <p>
         Attendance OS is a Chrome extension and companion web app that reads your attendance data from
         the Landmark University (LMU) student portal
-        (<a href="https://att2.lmu.edu.ng" target="_blank" rel="noopener">att2.lmu.edu.ng</a>)
+        (<a href="https://att3.lmu.edu.ng" target="_blank" rel="noopener">att3.lmu.edu.ng</a>)
         and displays it in a local dashboard with skip calculators, recovery planning, and analytics.
         It is an independent, open-source student project and is not affiliated with
         or endorsed by Landmark University.
@@ -335,7 +335,7 @@
             <tbody>
                 <tr>
                     <td><code>content-scraper.js</code></td>
-                    <td><code>att2.lmu.edu.ng</code></td>
+                    <td><code>att3.lmu.edu.ng</code></td>
                     <td>
                         <strong>Automatically on page load</strong> (if the attendance table is
                         present), and again when you click <em>Sync Now</em> in the popup.
@@ -454,7 +454,7 @@
     <p>The only data flows in the entire system are:</p>
     <ul>
         <li>
-            <strong>att2.lmu.edu.ng → extension (local):</strong> The scraper reads the page
+            <strong>att3.lmu.edu.ng → extension (local):</strong> The scraper reads the page
             you have already opened. The extension does not log in on your behalf or fetch
             pages independently.
         </li>
@@ -498,7 +498,7 @@
                         are checked but never stored or transmitted.</td>
                 </tr>
                 <tr>
-                    <td>Host: <code>att2.lmu.edu.ng/*</code></td>
+                    <td>Host: <code>att3.lmu.edu.ng/*</code></td>
                     <td>Host permission</td>
                     <td>Allows <code>content-scraper.js</code> to run on the LMU portal and
                         read the attendance table. Required for the core sync feature.</td>
@@ -531,7 +531,7 @@
         <li>
             <strong>Tab URL validation:</strong> Before injecting a scrape command,
             <code>background.js</code> checks that the target tab's URL starts with
-            <code>https://att2.lmu.edu.ng/</code> and that the tab has fully loaded.
+            <code>https://att3.lmu.edu.ng/</code> and that the tab has fully loaded.
             It retries up to 8 times (500 ms apart) before giving up, with a hard 15-second
             timeout.
         </li>

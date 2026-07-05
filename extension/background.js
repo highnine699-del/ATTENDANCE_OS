@@ -103,7 +103,7 @@ async function scrapeAttendanceFromTab(tabId) {
                 }
 
                 const tabUrl = tab?.url || '';
-                if (!tabUrl.startsWith('https://att2.lmu.edu.ng/')) {
+                if (!tabUrl.startsWith('https://att3.lmu.edu.ng/')) {
                     cleanup();
                     reject(new Error('Please open the LMU attendance portal before syncing.'));
                     return;

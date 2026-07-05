@@ -4,7 +4,7 @@
  * Licensed under the MIT License.
  */
 
-const CACHE_VERSION = '2.0.2';
+const CACHE_VERSION = '2.0.3';
 const CACHE_NAME = `attendance-os-${CACHE_VERSION}`;
 const ASSETS = [
     '/',
@@ -28,7 +28,8 @@ const ASSETS = [
     '/js/modules/sync.js',
     '/js/modules/settings.js',
     '/js/modules/analytics.js',
-    '/manifest.json'
+    '/manifest.json',
+    '/attendance.json'
 ];
 
 self.addEventListener('install', e =>
@@ -37,7 +38,7 @@ self.addEventListener('install', e =>
 
 self.addEventListener('fetch', e => {
     // Network-first for API calls, cache-first for assets
-    if (e.request.url.includes('att2.lmu.edu.ng')) return;
+    if (e.request.url.includes('att3.lmu.edu.ng')) return;
     e.respondWith(
         caches.match(e.request).then(cached => cached || fetch(e.request).then(res => {
             if (res.ok) {
