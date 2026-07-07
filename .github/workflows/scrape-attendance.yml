@@ -1,11 +1,12 @@
 name: Scrape Attendance
 
 on:
-  schedule:
-    # 5x/day during class hours (WAT = UTC+1)
-    # 6am WAT = 5am UTC, 9am WAT = 8am UTC, 12pm WAT = 11am UTC
-    # 3pm WAT = 2pm UTC, 6pm WAT = 5pm UTC
-    - cron: '0 5,8,11,14,17 * * *'
+  # Schedule disabled - uncomment and configure GitHub Secrets to enable
+  # schedule:
+  #   # 5x/day during class hours (WAT = UTC+1)
+  #   # 6am WAT = 5am UTC, 9am WAT = 8am UTC, 12pm WAT = 11am UTC
+  #   # 3pm WAT = 2pm UTC, 6pm WAT = 5pm UTC
+  #   - cron: '0 5,8,11,14,17 * * *'
   workflow_dispatch: {}
 
 jobs:

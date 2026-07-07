@@ -152,7 +152,7 @@ window.applyTheme = applyTheme;
 function installExtensionFromPage() {
     const crxFileName = 'extension.crx';
     const extensionFolderName = 'extension';
-    const localCrxPath = './' + crxFileName;
+    const localCrxPath = './dist/' + crxFileName;
     const installMessage = `To install the Chrome extension:\n\n` +
         `1. Download the packaged extension file below\n` +
         `2. Open Chrome and go to chrome://extensions/\n` +

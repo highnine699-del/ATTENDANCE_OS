@@ -28,5 +28,5 @@ zip -r ../attendance-os-extension.zip .
 ```
 
 Notes:
-- Do NOT include `extension.pem` or `extension.crx` in the uploaded zip.
+- Do NOT include `extension.pem` or `dist/extension.crx` in the uploaded zip.
 - The store build cannot include `http://localhost` host permissions.

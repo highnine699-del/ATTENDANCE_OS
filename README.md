@@ -33,13 +33,15 @@ python -m http.server 8080
 # http://localhost:8080
 ```
 
-### Load Chrome Extension
+### Load Chrome Extension (Development)
 
 1. Open Chrome and go to `chrome://extensions/`
 2. Enable "Developer mode" (top right)
 3. Click "Load unpacked"
 4. Select the `extension/` folder
 5. Pin the extension to your toolbar
+
+**Note:** The development version includes localhost permissions for testing with the local web app.
 
 ### Sync Attendance
 
@@ -74,16 +76,27 @@ attendance-os/
 │       ├── calculator.js
 │       ├── sync.js
 │       └── settings.js
-├── extension/              # Chrome extension
-│   ├── manifest.json
+├── extension/              # Chrome extension (source)
+│   ├── manifest.json       # Dev version with localhost permissions
 │   ├── background.js
 │   ├── content-scraper.js
 │   ├── popup.html
 │   ├── popup.js
+│   ├── webapp-bridge.js
 │   ├── css/
 │   └── icons/
+├── scripts/                # Build scripts
+│   └── build-extension-store.js  # Generate Chrome Web Store version
+├── dist/                   # Build artifacts (gitignored)
+│   ├── extension.crx
+│   └── extension-chrome-store.crx
 └── docs/                   # Documentation
 ```
+
+**Extension Build Process:**
+- `extension/` - Source folder with localhost permissions (for local development)
+- Run `npm run build:extension:store` to generate `extension-chrome-store/` (without localhost for Chrome Web Store)
+- The generated `extension-chrome-store/` folder is gitignored as a build artifact
 
 ## 🎨 Tech Stack
 

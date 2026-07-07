@@ -36,11 +36,15 @@ Attendance OS is a modular vanilla JavaScript application with a Chrome extensio
 ### 2. Chrome Extension
 
 #### Extension Components
-- `manifest.json`: MV3 manifest with permissions
+- `manifest.json`: MV3 manifest with permissions (dev version with localhost)
 - `background.js`: Service worker for message handling
 - `content-scraper.js`: Content script for att3.lmu.edu.ng
 - `popup.html`: Extension popup UI
 - `popup.js`: Popup logic and user interactions
+- `webapp-bridge.js`: Bridges extension to web app
+
+#### Extension Build Process
+The extension source is in `extension/` with localhost permissions for local development. For Chrome Web Store deployment, run `npm run build:extension:store` to generate `extension-chrome-store/` with localhost permissions removed. The generated folder is a build artifact and gitignored.
 
 #### Extension Architecture
 

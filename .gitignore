@@ -35,6 +35,12 @@ build/
 *.min.js
 *.min.css
 
+# Extension signing keys
+*.pem
+
+# Extension build artifacts (generated from extension/ source)
+extension-chrome-store/
+
 # Extension (exclude from GitHub Pages)
 # Uncomment if deploying extension separately
 # extension/

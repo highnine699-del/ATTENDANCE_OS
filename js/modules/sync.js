@@ -74,9 +74,16 @@ export function renderSync(state, container) {
             <h2>Sync Data</h2>
             
             <div class="sync-section">
-                <h3>${icons.progress} Sync from Extension</h3>
+                <h3>${icons.progress} Sync via Portal Login</h3>
+                <p>Enter your LMU portal credentials to sync attendance directly. Works on all devices (mobile & desktop).</p>
+                <button id="sync-portal-btn" class="btn-primary">Sync via Portal Login</button>
+                <p id="portal-sync-status" class="sync-message"></p>
+            </div>
+
+            <div class="sync-section">
+                <h3>${icons.extension} Sync from Extension</h3>
                 <p>Click below to import your latest attendance from the LMU portal (att3.lmu.edu.ng) via the Chrome extension.</p>
-                <button id="sync-extension-btn" class="btn-primary">Sync from Extension</button>
+                <button id="sync-extension-btn" class="btn-secondary">Sync from Extension</button>
                 <p id="sync-status" class="sync-message"></p>
             </div>
 
@@ -136,6 +143,10 @@ SN	COURSE	UNITS	LECTURE_WEEKS	TOTAL_CLASS	NO_ATTENDED	NO_SUPPRESSED	PERCENTAGE	A
     container.innerHTML = html;
 
     // Event listeners
+    document.getElementById('sync-portal-btn').addEventListener('click', () => {
+        showPortalLoginModal(state);
+    });
+
     document.getElementById('sync-extension-btn').addEventListener('click', async () => {
         const btn = document.getElementById('sync-extension-btn');
         const msg = document.getElementById('sync-status');
@@ -273,5 +284,124 @@ SN	COURSE	UNITS	LECTURE_WEEKS	TOTAL_CLASS	NO_ATTENDED	NO_SUPPRESSED	PERCENTAGE	A
             statusEl.classList.add('error');
         }
         e.target.reset();
+    });
+}
+
+function showPortalLoginModal(state) {
+    // Create modal overlay
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3>Sync via Portal Login</h3>
+                <button class="modal-close" aria-label="Close">${icons.x}</button>
+            </div>
+            <div class="modal-body">
+                <p>Enter your LMU portal credentials to sync attendance directly.</p>
+                <form id="portal-login-form">
+                    <label>
+                        <span>Username / Matric Number</span>
+                        <input type="text" name="username" required autocomplete="username">
+                    </label>
+                    <label>
+                        <span>Password</span>
+                        <input type="password" name="password" required autocomplete="current-password">
+                    </label>
+                    <button type="submit" class="btn-primary">Sync Attendance</button>
+                </form>
+                <p id="portal-login-status" class="sync-message"></p>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Close button
+    modal.querySelector('.modal-close').addEventListener('click', () => {
+        modal.remove();
+    });
+
+    // Close on overlay click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+
+    // Form submission
+    modal.querySelector('#portal-login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const username = fd.get('username');
+        const password = fd.get('password');
+        const statusEl = document.getElementById('portal-login-status');
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+
+        submitBtn.innerHTML = '<span class="spinner"></span> Syncing...';
+        submitBtn.disabled = true;
+        statusEl.textContent = 'Syncing...';
+        statusEl.classList.remove('success', 'error');
+
+        try {
+            // Worker URL - deployed Cloudflare Worker
+            const WORKER_URL = window.WORKER_URL || 'https://attendance-os-scrape-proxy.highnine699.workers.dev/api/scrape';
+            
+            const response = await fetch(WORKER_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            });
+
+            // Clear password immediately after request
+            e.target.reset();
+            password = null;
+
+            const result = await response.json();
+
+            if (result.success) {
+                let updatedCount = 0;
+                result.attendance.forEach(course => {
+                    const existing = state.getCourse(course.courseCode);
+                    if (existing) {
+                        state.updateCourse(course.courseCode, {
+                            attended: course.attended,
+                            suppressed: course.suppressed,
+                            percentage: course.percentage,
+                            totalClasses: course.totalClasses,
+                            syncSource: 'portal-login'
+                        });
+                        updatedCount++;
+                    }
+                });
+
+                if (result.semesterInfo && result.semesterInfo.lectureWeeks) {
+                    state.updateSemesterInfo({ lectureWeeks: result.semesterInfo.lectureWeeks });
+                }
+
+                state.recordSync('portal-login', updatedCount);
+
+                statusEl.innerHTML = `${icons.check} Synced ${updatedCount} courses`;
+                statusEl.classList.add('success');
+                showSuccess(`Synced ${updatedCount} courses via portal login`);
+
+                // Close modal after success
+                setTimeout(() => modal.remove(), 1500);
+            } else {
+                statusEl.innerHTML = `${icons.x} ${result.error}`;
+                statusEl.classList.add('error');
+                showError(result.error);
+            }
+        } catch (error) {
+            e.target.reset();
+            statusEl.innerHTML = `${icons.x} Sync failed. Please try again.`;
+            statusEl.classList.add('error');
+            showError('Sync failed. Please try again.');
+        } finally {
+            submitBtn.innerHTML = 'Sync Attendance';
+            submitBtn.disabled = false;
+        }
     });
 }

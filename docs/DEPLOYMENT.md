@@ -50,6 +50,8 @@ ruby -run -e httpd . -p 8080
 5. Extension should appear in your extensions list
 6. Pin it to your toolbar for easy access
 
+**Note:** The development version includes localhost permissions for testing with the local web app.
+
 ### Development Workflow
 
 1. Make code changes
@@ -227,29 +229,39 @@ Update `extension/manifest.json`:
 - Privacy policy page
 - Verified developer identity
 
-### Steps
+### Build Extension for Chrome Web Store
 
-1. **Prepare Extension**
-   - Create proper icons
-   - Add privacy policy link to manifest
-   - Test thoroughly
+The Chrome Web Store requires extensions without localhost permissions. Build the store version:
 
-2. **Zip Extension**
+```bash
+npm run build:extension:store
+```
+
+This generates the `extension-chrome-store/` folder with:
+- Localhost permissions removed (Chrome Web Store requirement)
+- Modified `manifest.json` and `manifest.store.json`
+- All other files identical to the source
+
+### Package and Submit
+
+1. **Zip Extension**
    ```bash
-   cd extension
-   zip -r attendance-os-extension.zip .
+   cd extension-chrome-store
+   zip -r ../attendance-os-extension.zip .
    ```
 
-3. **Submit to Chrome Web Store**
+2. **Submit to Chrome Web Store**
    - Go to https://chrome.google.com/webstore/dev/dashboard
    - Click "Add new item"
    - Upload zip file
    - Fill in store listing details
    - Submit for review
 
-4. **Wait for Review**
+3. **Wait for Review**
    - Review typically takes 3-7 days
    - Address any feedback from Google
+
+**Note:** Do not include `extension.pem` or `dist/extension.crx` in the uploaded zip.
 
 ### Store Listing Requirements
 

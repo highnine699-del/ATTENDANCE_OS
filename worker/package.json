@@ -1,0 +1,16 @@
+{
+  "name": "attendance-os-scrape-proxy",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker proxy for LMU portal attendance scraping",
+  "main": "scrape-proxy.js",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev"
+  },
+  "keywords": ["cloudflare", "worker", "attendance", "scraper"],
+  "author": "Josiah",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}
