@@ -16,7 +16,7 @@ import { icons } from './icons.js';
 
 // ── PWA: register service worker ─────────────────────────────────────────
 // FIX: sw.js existed but was never registered — PWA was completely non-functional
-// GitHub Pages deploys to subpath ATTENDANCE_TRACKER/, so use relative path
+// GitHub Pages deploys to subpath ATTENDANCE_OS/, so use relative path
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(err => {

@@ -18,7 +18,7 @@ A web application and Chrome extension for Landmark University students to track
 
 ### Production (GitHub Pages)
 
-Access the live app at: **https://highnine699-del.github.io/ATTENDANCE_TRACKER/**
+Access the live app at: **https://highnine699-del.github.io/ATTENDANCE_OS/**
 
 ### Development (Localhost)
 
@@ -104,7 +104,7 @@ attendance-os/
 - **Storage**: localStorage with persistence
 - **Extension**: Chrome MV3 with content scripts
 - **PWA**: Service worker for offline-first caching
-- **Hosting**: GitHub Pages (production at `/ATTENDANCE_TRACKER/` subpath)
+- **Hosting**: GitHub Pages (production at `/ATTENDANCE_OS/` subpath)
 - **Styling**: Custom CSS with CSS variables
 - **Numeric Safety**: Strict `Number.isFinite()` validation throughout
 
@@ -206,20 +206,20 @@ Configure semester dates and lecture weeks in Settings:
 
 ### GitHub Pages
 
-The app is deployed at: **https://highnine699-del.github.io/ATTENDANCE_TRACKER/**
+The app is deployed at: **https://highnine699-del.github.io/ATTENDANCE_OS/**
 
 **Deployment steps:**
 ```bash
 # 1. Push all files except extension/ to GitHub
-# 2. Repository: highnine699/attendance-os
+# 2. Repository: highnine699-del/ATTENDANCE_OS
 # 3. Settings → Pages → Source: main / root
-# 4. Service worker resolves to /ATTENDANCE_TRACKER/sw.js (relative paths)
-# 5. App accessible at ATTENDANCE_TRACKER subpath
+# 4. Service worker resolves to /ATTENDANCE_OS/sw.js (relative paths)
+# 5. App accessible at ATTENDANCE_OS subpath
 ```
 
 **Notes:**
 - Service worker uses relative paths (`./sw.js`) for correct subpath resolution
-- All assets served from `/ATTENDANCE_TRACKER/` directory
+- All assets served from `/ATTENDANCE_OS/` directory
 - The Chrome extension must still be loaded locally (`chrome://extensions/`)
 - Cross-origin communication works with `highnine699-del.github.io` domain
 
@@ -237,7 +237,7 @@ The app is deployed at: **https://highnine699-del.github.io/ATTENDANCE_TRACKER/*
 **Problem**: Error "Failed to register ServiceWorker... bad HTTP response code (404)"
 
 **Solution**: 
-- Ensure you're accessing the app at the correct GitHub Pages URL: `https://highnine699-del.github.io/ATTENDANCE_TRACKER/`
+- Ensure you're accessing the app at the correct GitHub Pages URL: `https://highnine699-del.github.io/ATTENDANCE_OS/`
 - Service worker uses relative paths (`./ sw.js`) for GitHub Pages subpath support
 - Clear browser cache (Dev Tools → Application → Cache Storage)
 - In dev mode (localhost), ensure the HTTP server serves `sw.js` correctly

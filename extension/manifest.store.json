@@ -29,7 +29,7 @@
         },
         {
             "matches": [
-                "https://highnine699-del.github.io/ATTENDANCE_TRACKER/*"
+                "https://highnine699-del.github.io/ATTENDANCE_OS/*"
             ],
             "js": [
                 "webapp-bridge.js"
@@ -39,7 +39,7 @@
     ],
     "externally_connectable": {
         "matches": [
-            "https://highnine699-del.github.io/ATTENDANCE_TRACKER/*"
+            "https://highnine699-del.github.io/ATTENDANCE_OS/*"
         ]
     }
 }

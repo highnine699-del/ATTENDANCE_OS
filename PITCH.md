@@ -209,7 +209,7 @@ Feature Modules:
 
 ### Production Deployment
 1. **Web App**: GitHub Pages (free hosting)
-   - URL: https://highnine699-del.github.io/ATTENDANCE_TRACKER/
+   - URL: https://highnine699-del.github.io/ATTENDANCE_OS/
    - SSL included
    - CDN distribution
 

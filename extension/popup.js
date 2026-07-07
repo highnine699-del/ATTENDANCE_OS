@@ -9,7 +9,7 @@
  */
 
 const APP_URLS = [
-    'https://highnine699-del.github.io/ATTENDANCE_TRACKER/',
+    'https://highnine699-del.github.io/ATTENDANCE_OS/',
     'http://localhost:3000',
     'http://127.0.0.1:3000',
     'http://localhost:8080',

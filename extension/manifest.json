@@ -31,7 +31,7 @@
             "matches": [
                 "http://localhost:*/*",
                 "http://127.0.0.1:*/*",
-                "https://highnine699-del.github.io/ATTENDANCE_TRACKER/*"
+                "https://highnine699-del.github.io/ATTENDANCE_OS/*"
             ],
             "js": [
                 "webapp-bridge.js"
@@ -43,7 +43,7 @@
         "matches": [
             "http://localhost:*/*",
             "http://127.0.0.1:*/*",
-            "https://highnine699-del.github.io/ATTENDANCE_TRACKER/*"
+            "https://highnine699-del.github.io/ATTENDANCE_OS/*"
         ]
     }
 }

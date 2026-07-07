@@ -135,7 +135,7 @@ No login required.
    - Click "Open Web App" to see the synced data in the dashboard
 
 3. **Test Local Web App:**
-   - Visit https://highnine699-del.github.io/ATTENDANCE_TRACKER/
+   - Visit https://highnine699-del.github.io/ATTENDANCE_OS/
    - Verify the app loads and displays a dashboard
    - Navigate to Settings and enter a user name
    - Add or import sample course data
